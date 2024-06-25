@@ -3,7 +3,7 @@ FROM node:14.21.3 AS build
 
 WORKDIR /app
 
-COPY ../domain-chatvrm .
+COPY domain-chatvrm .
 
 RUN npm config set registry https://registry.npmmirror.com && \
     rm -rf .next && \
