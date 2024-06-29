@@ -1,5 +1,7 @@
 from django import forms
+
 from .models import CustomRoleModel
+
 
 class CustomRoleForm(forms.ModelForm):
     class Meta:

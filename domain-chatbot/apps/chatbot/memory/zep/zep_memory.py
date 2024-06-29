@@ -1,20 +1,13 @@
 import json
 import logging
 from typing import Optional
-
 from zep_python import ZepClient, Session, Message, Memory, MemorySearchPayload
 from zep_python.user import User, CreateUserRequest, UpdateUserRequest
 
+from ...llms.base_llm_model import ChatHistroy
+
+
 logger = logging.getLogger(__name__)
-
-
-class ChatHistroy:
-    role: str
-    content: str
-
-    def __init__(self, role: str, content: str) -> None:
-        self.role = role
-        self.content = content
 
 
 class ZepService:
@@ -28,7 +21,6 @@ class ZepService:
         logger.info("Initialize ZepClient successfully")
 
     def add_user(self, user_id: str, user_name: str) -> User:
-
         # TODO 需要获取用户信息
         email = f"{user_id}@example.com"
         first_name = user_name
@@ -116,10 +108,10 @@ class ZepService:
         chat_historys.reverse()
         return chat_historys
 
-    def search_mmr(self, query: str, channel_id: str, mmr_lambda: float = 0.5, limit: int = 5):
+    def search_mmr(self, text: str, channel_id: str, mmr_lambda: float = 0.5, limit: int = 5):
         # Initialize the Zep client before running this code
         search_payload = MemorySearchPayload(
-            text=query,
+            text=text,
             search_scope="summary",  # This could be messages or summary
             search_type="mmr",  # remove this if you'd prefer not to rerank results
             mmr_lambda=mmr_lambda,  # tune diversity vs relevance
@@ -141,13 +133,10 @@ class ChatHistroyService:
     def __init__(self, zep_url: str, zep_optional_api_key: str):
         self.zep_service = ZepService(zep_url, zep_optional_api_key)
 
-    def search(self, query: str, user_id: str, channel_id: str, limit: int == 5) -> list[ChatHistroy]:
-        user_id = user_id
-        channel_id = channel_id
-        return self.zep_service.search_mmr(query=query, channel_id=channel_id, limit=limit)
+    def search(self, text: str, user_id: str, channel_id: str, limit: int = 5) -> list[ChatHistroy]:
+        return self.zep_service.search_mmr(text=text, channel_id=channel_id, limit=limit)
 
     def push(self, user_id: str, user_name: str, channel_id: str, chat_histroy: ChatHistroy):
-
         # 查询用户是否存在，如果不存在初始化用户信息和会话
         user = self.zep_service.get_user(user_id)
         if not user:
@@ -158,8 +147,7 @@ class ChatHistroyService:
         self.zep_service.add_memorys(channel_id, [chat_histroy])
 
     def list(self, user_id: str, channel_id: str) -> list[ChatHistroy]:
-
-        # 查询用户和会话是否，只要有一个不存在，直接返回空
+        # 查询用户和会话，只要有一个不存在，直接返回空
         user = self.zep_service.get_user(user_id)
         session = self.zep_service.get_session(user_id, channel_id)
         if not user or not session:

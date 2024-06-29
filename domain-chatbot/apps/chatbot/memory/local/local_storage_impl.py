@@ -2,69 +2,56 @@ import datetime
 import logging
 import jieba
 import jieba.analyse
-import json
 from django.db.models import Q
-from ..base_storage import BaseStorage
+from typing import Any, Dict, List
+
+from ...utils.chat_message_utils import format_message, format_user_message, format_role_message
 from ...models import LocalMemoryModel
 
-# TODO 搜索方式待整改
+
 logger = logging.getLogger(__name__)
 
 
-class LocalStorage(BaseStorage):
+class LocalStorage:
 
     def __init__(self, memory_storage_config: dict[str, str]):
-        logger.info("=> Load LocalStorage Success")
+        logger.info("=> Init LocalStorage Success")
 
-    def search(self, query_text: str, limit: int, owner: str) -> list[str]:
-        # 使用 Q 对象组合查询条件，
-        query = Q(owner=owner)
-
+    def search(self, role_name: str, user_name: str, text: str, limit: int) -> list[Dict[str, str]]:
+        '''检索记忆,只返回关联性最强的记忆'''
         # 查询结果，并限制数量
-        results = LocalMemoryModel.objects.filter(
-            query).order_by('-timestamp')[:limit]
+        results = LocalMemoryModel.objects.filter(Q(role_name=role_name) & Q(user_name=user_name)).order_by('-timestamp')[:limit]
 
-        # 提取查询结果的 text 字段
-        result_texts = [result.text for result in results]
-        return result_texts
+        result_list = [{"user": result.user_text, "ai": result.role_text} for result in results]
+        return result_list
 
-    def pageQueryByOwner(self, page_num: int, page_size: int, owner: str) -> list[str]:
+    def pageQuery(self, role_name: str, user_name: str, page_num: int, page_size: int) -> list[Dict[str, str]]:
+        '''分页检索记忆'''
         # 计算分页偏移量
         offset = (page_num - 1) * page_size
 
         # 分页查询，并提取 text 字段
-        results = LocalMemoryModel.objects.filter(owner=owner).order_by('-timestamp').values_list(
-            'text', flat=True)[offset:offset + page_size]
-        results = list(results)
-        results.reverse()
-        return results
+        results = LocalMemoryModel.objects.filter(Q(role_name=role_name) & Q(user_name=user_name)).order_by('-timestamp')[offset:offset + page_size]
+        result_list = [{"user": result.user_text, "ai": result.role_text} for result in results]
+        return result_list
 
-    def pageQuery(self, page_num: int, page_size: int) -> list[str]:
-        # 计算分页偏移量
-        offset = (page_num - 1) * page_size
-
-        # 分页查询，并提取 text 字段
-        results = LocalMemoryModel.objects.order_by('-timestamp').values_list(
-            'text', flat=True)[offset:offset + page_size]
-        results = list(results)
-        results.reverse()
-        return results
-
-    def save(self, pk: int, query_text: str, sender: str, owner: str, importance_score: int) -> None:
-        query_words = jieba.cut(query_text, cut_all=False)
-        query_tags = list(query_words)
-        keywords = jieba.analyse.extract_tags(" ".join(query_tags), topK=20)
-        current_timestamp = datetime.datetime.now().isoformat()  #
+    def save(self, role_name: str, user_name: str, user_text: str, role_text: str, pk: int) -> None:
+        '''保存记忆'''
+        # text_words = jieba.cut(text, cut_all=False)
+        # text_words_list = list(text_words)
+        # text_tags = jieba.analyse.extract_tags(" ".join(text_words_list), topK=20)
+        current_timestamp = datetime.datetime.now().isoformat()
         local_memory_model = LocalMemoryModel(
             id=pk,
-            text=query_text,
-            tags=",".join(keywords),  # 设置标签
-            sender=sender,
-            owner=owner,
+            user_name=user_name,
+            user_text=user_text,
+            role_name=role_name,
+            role_text=role_text,
             timestamp=current_timestamp
         )
         local_memory_model.save()
 
-    def clear(self, owner: str) -> None:
-        # 清除指定 owner 的记录
-        LocalMemoryModel.objects.filter(owner=owner).delete()
+    def clear(self, role_name: str) -> None:
+        '''清空记忆'''
+        # 清除指定 role_name 的记录
+        LocalMemoryModel.objects.filter(role_name=role_name).delete()

@@ -1,10 +1,10 @@
 {
+  "enableLive": false,
   "liveStreamingConfig": {
     "B_ROOM_ID": "27892212",
     "B_COOKIE": ""
   },
   "enableProxy": false,
-  "enableLive": false,
   "httpProxy": "http://host.docker.internal:23457",
   "httpsProxy": "https://host.docker.internal:23457",
   "socks5Proxy": "socks5://host.docker.internal:23457",
@@ -20,7 +20,7 @@
   },
   "characterConfig": {
     "character": 1,
-    "character_name": "爱莉",
+    "character_name": "\u6768\u5e42",
     "yourName": "yuki129",
     "vrmModel": "\u308f\u305f\u3042\u3081_03.vrm",
     "vrmModelType": "system"
@@ -41,10 +41,10 @@
       "password": "Milvus",
       "dbName": "default"
     },
-    "enableLongMemory": false,
-    "enableSummary": false,
+    "enableLongMemory": true,
+    "enableSummary": true,
     "languageModelForSummary": "openai",
-    "enableReflection": false,
+    "enableReflection": true,
     "languageModelForReflection": "openai"
   },
   "custom_role_template_type": "zh",

@@ -1,54 +1,35 @@
+import os
 import json
 import logging
-import os
 
 from ..llms.llm_model_strategy import LlmModelDriver
 from ..models import CustomRoleModel, SysConfigModel
-from ..character.sys.aili_zh import aili_zh
-from ..reflection.reflection import ImportanceRating, PortraitAnalysis
+from ..character.default_character import default_character
+
 
 config_dir = os.path.dirname(os.path.abspath(__file__))
 config_path = os.path.join(config_dir, 'sys_config.json')
 sys_code = "adminSettings"
-
 logger = logging.getLogger(__name__)
-
-
-def lazy_memory_storage(sys_config_json: any, sys_cofnig: any):
-    from ..memory.memory_storage import MemoryStorageDriver
-    # 加载记忆模块配置
-    memory_storage_config = {
-        "host": sys_config_json["memoryStorageConfig"]["milvusMemory"]["host"],
-        "port": sys_config_json["memoryStorageConfig"]["milvusMemory"]["port"],
-        "user": sys_config_json["memoryStorageConfig"]["milvusMemory"]["user"],
-        "password": sys_config_json["memoryStorageConfig"]["milvusMemory"]["password"],
-        "db_name": sys_config_json["memoryStorageConfig"]["milvusMemory"]["dbName"],
-    }
-    logger.debug(f"=> memory_storage_config:{memory_storage_config}")
-    # 加载记忆模块驱动
-    return MemoryStorageDriver(memory_storage_config=memory_storage_config, sys_config=sys_cofnig)
 
 
 class SysConfig:
     llm_model_driver: LlmModelDriver
     conversation_llm_model_driver_type: str
-    enable_summary: bool
     enable_longMemory: bool
+    enable_summary: bool
     summary_llm_model_driver_type: str
     enable_reflection: bool
     reflection_llm_model_driver_type: str
-    memory_storage_driver: any
+    zep_url: str
+    zep_optional_api_key: str
+    local_memory_num: int = 10
+    search_memory_size: int = 10
     character: int
     character_name: str
     your_name: str
     room_id: str
-    search_memory_size: int = 3
-    zep_url: str
-    zep_optional_api_key: str
-    importance_rating: ImportanceRating
-    portrait_analysis: PortraitAnalysis
-    local_memory_num: int = 5
-
+    
     def __init__(self) -> None:
         self.bilibili_live_listener = None
         self.thread_pool_manager = None
@@ -60,8 +41,7 @@ class SysConfig:
         with open(config_path, 'r') as f:
             sys_config_json = json.load(f)
         try:
-            sys_config_obj = SysConfigModel.objects.filter(
-                code=sys_code).first()
+            sys_config_obj = SysConfigModel.objects.filter(code=sys_code).first()
             if sys_config_obj == None:
                 logger.debug("=> save sys config to db")
                 sys_config_model = SysConfigModel(
@@ -81,43 +61,11 @@ class SysConfig:
         sys_config_obj.save()
 
     def load(self):
-
-        logger.debug(
-            "======================== Load SysConfig ========================")
+        logger.debug("======================== Load SysConfig ========================")
 
         sys_config_json = self.get()
 
         os.environ['TOKENIZERS_PARALLELISM'] = "false"
-
-        # 初始化默认角色
-        try:
-            result = CustomRoleModel.objects.all()
-            if len(result) == 0:
-                logger.debug("=> load default character")
-                custom_role = CustomRoleModel(
-                    role_name=aili_zh.role_name,
-                    persona=aili_zh.persona,
-                    personality=aili_zh.personality,
-                    scenario=aili_zh.scenario,
-                    examples_of_dialogue=aili_zh.examples_of_dialogue,
-                    custom_role_template_type=aili_zh.custom_role_template_type,
-                    role_package_id=-1
-                )
-                custom_role.save()
-        except Exception as e:
-            logger.error("=> load default character ERROR: %s" % str(e))
-
-        # 加载角色配置
-        character = sys_config_json["characterConfig"]["character"]
-        yourName = sys_config_json["characterConfig"]["yourName"]
-        character_name = sys_config_json["characterConfig"]["character_name"]
-        logger.debug("=> character Config")
-        logger.debug(f"character:{character}")
-        logger.debug(f"character_name:{character_name}")
-        logger.debug(f"yourName:{yourName}")
-        self.character = character
-        self.character_name = character_name
-        self.yourName = yourName
 
         # 加载大语言模型配置
         os.environ['OPENAI_API_KEY'] = sys_config_json["languageModelConfig"]["openai"]["OPENAI_API_KEY"]
@@ -139,9 +87,9 @@ class SysConfig:
             os.environ['HTTP_PROXY'] = sys_config_json["httpProxy"]
             os.environ['HTTPS_PROXY'] = sys_config_json["httpsProxy"]
             os.environ['SOCKS5_PROXY'] = sys_config_json["socks5Proxy"]
-            logger.debug(f"=> HTTP_PROXY:" + os.environ['HTTP_PROXY'])
-            logger.debug(f"=> HTTPS_PROXY:" + os.environ['HTTPS_PROXY'])
-            logger.debug(f"=> SOCKS5_PROXY:" + os.environ['SOCKS5_PROXY'])
+            logger.info(f"=> HTTP_PROXY:" + os.environ['HTTP_PROXY'])
+            logger.info(f"=> HTTPS_PROXY:" + os.environ['HTTPS_PROXY'])
+            logger.info(f"=> SOCKS5_PROXY:" + os.environ['SOCKS5_PROXY'])
         else:
             os.environ['HTTP_PROXY'] = ""
             os.environ['HTTPS_PROXY'] = ""
@@ -157,11 +105,11 @@ class SysConfig:
 
         # 是否开启记忆摘要
         logger.debug("=> Memory Config")
-        self.enable_summary = sys_config_json["memoryStorageConfig"]["enableSummary"]
         self.enable_longMemory = sys_config_json["memoryStorageConfig"]["enableLongMemory"]
+        self.enable_summary = sys_config_json["memoryStorageConfig"]["enableSummary"]
         logger.debug("=> enable_longMemory：" + str(self.enable_longMemory))
         logger.debug("=> enable_summary：" + str(self.enable_summary))
-        if (self.enable_summary):
+        if self.enable_summary:
             self.summary_llm_model_driver_type = sys_config_json[
                 "memoryStorageConfig"]["languageModelForSummary"]
             logger.debug("=> summary_llm_model_driver_type：" +
@@ -169,25 +117,48 @@ class SysConfig:
 
         self.enable_reflection = sys_config_json["memoryStorageConfig"]["enableReflection"]
         logger.debug("=> enableReflection：" + str(self.enable_reflection))
-        if (self.enable_reflection):
+        if self.enable_reflection:
             self.reflection_llm_model_driver_type = sys_config_json[
                 "memoryStorageConfig"]["languageModelForReflection"]
             logger.debug("=> reflection_llm_model_driver_type" +
-                         self.summary_llm_model_driver_type)
+                         self.reflection_llm_model_driver_type)
 
-        # 懒加载记忆模块
+        # 初始化默认角色
         try:
-            self.memory_storage_driver = lazy_memory_storage(
-                sys_config_json=sys_config_json, sys_cofnig=self)
+            result = CustomRoleModel.objects.all()
+            if len(result) == 0:
+                logger.debug("=> load default character")
+                custom_role = CustomRoleModel(
+                    role_name=default_character.role_name,
+                    persona=default_character.persona,
+                    personality=default_character.personality,
+                    scenario=default_character.scenario,
+                    examples_of_dialogue=default_character.examples_of_dialogue,
+                    custom_role_template_type=default_character.custom_role_template_type,
+                    role_package_id=default_character.role_package_id
+                )
+                custom_role.save()
         except Exception as e:
-            logger.error("init memory_storage error: %s" % str(e))
+            logger.error("=> load default character error: %s" % str(e))
+        
+        # 加载角色配置
+        character = sys_config_json["characterConfig"]["character"]
+        character_name = sys_config_json["characterConfig"]["character_name"]
+        yourName = sys_config_json["characterConfig"]["yourName"]
+        logger.debug("=> character Config")
+        logger.debug(f"character:{character}")
+        logger.debug(f"character_name:{character_name}")
+        logger.debug(f"yourName:{yourName}")
+        self.character = character
+        self.character_name = character_name
+        self.yourName = yourName
 
         logger.info("=> Load SysConfig Success")
 
-        # 加载直播配置
-        # if self.bili_live_client != None:
+        # # 加载直播配置
+        # if self.bili_live_client is not None:
         #     self.bili_live_client.stop()
-        # room_id = str(sys_config_json["liveStreamingConfig"]["B_STATION_ID"])
+        # room_id = str(sys_config_json["liveStreamingConfig"]["B_ROOM_ID"])
         # print("=> liveStreaming Config")
         # self.room_id = room_id
         # self.bili_live_client = BiliLiveClient(room_id=room_id)

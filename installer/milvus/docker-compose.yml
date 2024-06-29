@@ -1,4 +1,4 @@
-version: '3.5'
+version: '3'
 
 services:
   etcd:
@@ -43,6 +43,16 @@ services:
     depends_on:
       - "etcd"
       - "minio"
+  
+  attu:
+    container_name: attu
+    image: zilliz/attu:latest
+    environment:
+      MILVUS_URL: milvus-standalone:19530
+    ports:
+      - "9900:3000"
+    depends_on:
+      - "standalone"
 
 networks:
   default:

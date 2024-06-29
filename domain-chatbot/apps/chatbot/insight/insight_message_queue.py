@@ -2,9 +2,11 @@ import logging
 import queue
 import threading
 import traceback
+
 from ..utils.chat_message_utils import format_user_chat_text
 from ..process import process_core
 from ..output import realtime_message_queue
+
 
 # 创建一个线程安全的队列
 insight_message_queue = queue.SimpleQueue()
@@ -53,8 +55,8 @@ def send_message():
     while True:
         try:
             message = insight_message_queue.get()
-            if (message != None and message != ''):
-                if (message.type == "danmaku"):
+            if message is not None and message != '':
+                if message.type == "danmaku":
                     content = format_user_chat_text(text=message.content)
                     realtime_message_queue.put_message(realtime_message_queue.RealtimeMessage(
                         type=message.type,
@@ -63,8 +65,7 @@ def send_message():
                         emote=message.emote,
                         action=message.action
                     ))
-                    process_core.chat(
-                        you_name=message.user_name, query=message.content)
+                    process_core.chat(user_name=message.user_name, user_text=message.content)
         except Exception as e:
             traceback.print_exc()
 

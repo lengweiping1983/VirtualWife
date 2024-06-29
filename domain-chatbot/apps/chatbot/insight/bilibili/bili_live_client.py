@@ -29,9 +29,9 @@ class BiliLiveClient():
         if uid:
             self.uid = int(uid)
         self.cookie_str = os.environ['B_COOKIE']
-        logger.debug(f"=> room_id:{ self.room_id}")
-        logger.debug(f"=> uid:{self.uid}")
-        logger.debug(f"=> cookie_str:{self.cookie_str}")
+        logger.info(f"=> room_id:{ self.room_id}")
+        logger.info(f"=> uid:{self.uid}")
+        logger.info(f"=> cookie_str:{self.cookie_str}")
         logger.info("=> Init BLiveClient Success")
 
     async def start(self):

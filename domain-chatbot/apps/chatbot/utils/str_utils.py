@@ -22,6 +22,7 @@ def remove_spaces_and_tabs(input_string) -> str:
     text = input_string.replace(" ", "").replace("\t", "")
     return text
 
+
 def remove_special_characters(input_string) -> str:
     # 定义正则表达式模式，匹配特殊符号，同时保留 .．！？~、,
     pattern = r'[^\w\s.．！？~、,，。]'  # 这个模式匹配除了字母、数字、空格和指定符号之外的所有字符

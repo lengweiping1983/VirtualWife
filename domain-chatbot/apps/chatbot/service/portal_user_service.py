@@ -1,4 +1,5 @@
 import logging
+
 from ..models import PortalUser
 from ..utils import singleton_snow_flake
 

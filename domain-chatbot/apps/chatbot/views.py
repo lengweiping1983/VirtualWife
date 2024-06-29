@@ -11,6 +11,7 @@ from .serializers import CustomRoleSerializer, UploadedImageSerializer, Uploaded
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .config import singleton_sys_config
+from .memory import memory_storage_driver
 from .models import CustomRoleModel, BackgroundImageModel, VrmModel, RolePackageModel
 import logging
 
@@ -25,9 +26,7 @@ def chat(request):
     :return:
     '''
     data = json.loads(request.body.decode('utf-8'))
-    query = data["query"]
-    you_name = data["you_name"]
-    process_core.chat(you_name=you_name, query=query)
+    process_core.chat(user_name=data["you_name"], user_text=data["query"])
     return Response({"response": "OK", "code": "200"})
 
 
@@ -70,7 +69,7 @@ def get_config(request):
 #     rg.generation(role_name="Maiko")
 #     timestamp = time.time()
 #     expr = f'timestamp <= {timestamp}'
-#     result = singleton_sys_config.memory_storage_driver.pageQuery(
+#     result = memory_storage_driver.pageQuery(
 #         1, 100, expr=expr)
 #     return Response({"response": result, "code": "200"})
 
@@ -81,7 +80,7 @@ def clear_memory(request):
       删除测试记忆
     :return:
     '''
-    result = singleton_sys_config.memory_storage_driver.clear("alan")
+    result = memory_storage_driver.clear("alan")
     return Response({"response": result, "code": "200"})
 
 
@@ -240,7 +239,7 @@ def upload_vrm_model(request):
         uploaded_file = request.data['vrm']
         # 获取上传文件的原始文件名
         original_filename = uploaded_file.name
-        serializer.save(original_name=original_filename, type="user")
+        serializer.save(type="user", original_name=original_filename)
         return Response({"response": "ok", "code": "200"})
     logger.error(serializer.errors)
     return Response({"response": "no", "code": "500"})

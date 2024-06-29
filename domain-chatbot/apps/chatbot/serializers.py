@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from .models import CustomRoleModel, BackgroundImageModel, VrmModel, RolePackageModel
 
 
@@ -17,8 +18,8 @@ class UploadedImageSerializer(serializers.ModelSerializer):
 
 
 class UploadedVrmModelSerializer(serializers.ModelSerializer):
-    original_name = serializers.CharField(required=False)
     type = serializers.CharField(required=False)
+    original_name = serializers.CharField(required=False)
 
     class Meta:
         model = VrmModel
