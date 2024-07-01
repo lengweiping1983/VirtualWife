@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -163,8 +162,7 @@ LOGGING = {
     "filters": {"require_debug_false": {"()": "django.utils.log.RequireDebugFalse"}},
     "formatters": {  # 定义了两种日志格式
         "verbose": {  # 详细
-            "format": "%(levelname)s %(asctime)s %(module)s "
-            "%(process)d %(thread)d %(message)s"
+            "format": "%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s"
         },
         'simple': {  # 简单
             'format': '[%(levelname)s][%(asctime)s][%(filename)s:%(lineno)d] \t %(message)s'
@@ -191,7 +189,7 @@ LOGGING = {
             "formatter": "simple",
         },
     },
-    "root": {"level": "INFO", "handlers": ["console","file"]},
+    "root": {"level": "INFO", "handlers": ["console", "file"]},
     "loggers": {
         "django.request": {  # Django的request发生error会自动记录
             "handlers": ["mail_admins"],

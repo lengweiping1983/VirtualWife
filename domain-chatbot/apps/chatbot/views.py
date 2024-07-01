@@ -1,19 +1,21 @@
 import os
+import json
+import logging
 from django.conf import settings
 from django.shortcuts import render, get_object_or_404
-import json
-
-from .character import role_package_manage
-from .insight.bilibili_api.bili_live_client import lazy_bilibili_live
-from .process import process_core
-from .serializers import CustomRoleSerializer, UploadedImageSerializer, UploadedVrmModelSerializer, \
-    UploadedRolePackageModelSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+
+from .serializers import CustomRoleSerializer, UploadedImageSerializer, UploadedVrmModelSerializer, \
+    UploadedRolePackageModelSerializer
+from .models import CustomRoleModel, BackgroundImageModel, VrmModel, RolePackageModel
+from .character import role_package_manage
 from .config import singleton_sys_config
 from .memory import memory_storage_driver
-from .models import CustomRoleModel, BackgroundImageModel, VrmModel, RolePackageModel
-import logging
+
+from .insight.bilibili_api.bili_live_client import lazy_bilibili_live
+from .process import process_core
+
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +24,6 @@ logger = logging.getLogger(__name__)
 def chat(request):
     '''
       聊天
-    :param request:
-    :return:
     '''
     data = json.loads(request.body.decode('utf-8'))
     process_core.chat(user_name=data["you_name"], user_text=data["query"])
@@ -34,8 +34,6 @@ def chat(request):
 def save_config(request):
     '''
       保存系统配置
-    :param request:
-    :return:
     '''
     data = json.loads(request.body.decode('utf-8'))
     config = data["config"]
@@ -53,8 +51,6 @@ def save_config(request):
 def get_config(request):
     '''
       获取系统配置
-    :param request:
-    :return:
     '''
     return Response({"response": singleton_sys_config.get(), "code": "200"})
 
@@ -63,7 +59,6 @@ def get_config(request):
 # def reflection_generation(request):
 #     '''
 #       生成新记忆
-#     :return:
 #     '''
 #     rg = ReflectionGeneration()
 #     rg.generation(role_name="Maiko")
@@ -78,7 +73,6 @@ def get_config(request):
 def clear_memory(request):
     '''
       删除测试记忆
-    :return:
     '''
     result = memory_storage_driver.clear("alan")
     return Response({"response": result, "code": "200"})

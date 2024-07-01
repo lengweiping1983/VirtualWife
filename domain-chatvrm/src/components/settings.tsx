@@ -37,7 +37,8 @@ import {damp} from 'three/src/math/MathUtils';
 import {join} from 'path';
 import {voiceData, getVoices} from '@/features/tts/ttsApi';
 
-const tabNames = ['基础设置', '自定义角色设置', '大语言模型设置', '记忆模块设置', '高级设置'];
+// const tabNames = ['用户设置', '基础设置', '自定义角色设置', '大语言模型设置', '记忆模块设置', '高级设置'];
+const tabNames = ['用户设置'];
 const llm_enums = ["openai", "ollama"]
 
 const publicDir = join(process.cwd(), 'public');
@@ -84,7 +85,7 @@ export const Settings = ({
                              onClickResetSystemPrompt,
                          }: Props) => {
 
-    const [currentTab, setCurrentTab] = useState('基础设置');
+    const [currentTab, setCurrentTab] = useState('用户设置');
     const [formData, setFormData] = useState(globalConfig);
     const [customRoles, setCustomRoles] = useState([custoRoleFormData]);
     const [enableProxy, setEnableProxy] = useState(false);
@@ -164,11 +165,23 @@ export const Settings = ({
         );
     };
 
-    // 基础设置组件
-    const BasicSettings = () => {
+    // 用户设置组件
+    const UserSettings = () => {
 
         return (
             <div className="globals-settings">
+
+                <div className="section">
+                    <div className="title">用户设置</div>
+                    <div className="field">
+                        <label>你的名字</label>
+                        <input type="text" defaultValue={formData.userName}
+                               onChange={e => {
+                                   formData.userName = e.target.value
+                                   setFormData(formData);
+                               }}/>
+                    </div>
+                </div>
 
                 <div className="section">
                     <div className="title">角色卡设置</div>
@@ -190,15 +203,6 @@ export const Settings = ({
                                 </option>
                             ))}
                         </select>
-                    </div>
-
-                    <div className="field">
-                        <label>你的名字</label>
-                        <input type="text" defaultValue={formData.characterConfig.yourName}
-                               onChange={e => {
-                                   formData.characterConfig.yourName = e.target.value
-                                   setFormData(formData);
-                               }}/>
                     </div>
 
                     <div className="field">
@@ -228,7 +232,15 @@ export const Settings = ({
                         </select>
                     </div>
                 </div>
+            </div>
+        );
+    }
 
+    // 基础设置组件
+    const BasicSettings = () => {
+
+        return (
+            <div className="globals-settings">
                 <div className="section">
                     <div className="title">语音设置</div>
                     <div className="checkbot-field">
@@ -283,14 +295,6 @@ export const Settings = ({
                                    setConversationType(formData.conversationConfig.conversationType);
                                }}
                                checked={conversationType === 'default'}/> 普通对话模式
-                        {/* <input className='checkbot-input' type="radio" name="chatType" value="thought-chain"
-              onChange={() => {
-                formData.conversationConfig.conversationType = 'thought_chain';
-                setFormData(formData);
-                setConversationType(formData.conversationConfig.conversationType);
-              }}
-              checked={conversationType === 'thought_chain'}
-            /> 推理+生成对话模式 */}
                     </div>
 
                     <div className="field">
@@ -1086,6 +1090,7 @@ export const Settings = ({
                         ))}
                     </div>
                     {/* 根据currentTab渲染对应的内容 */}
+                    {currentTab === '用户设置' && <UserSettings/>}
                     {currentTab === '基础设置' && <BasicSettings/>}
                     {currentTab === '自定义角色设置' && <CustomRoleSettings/>}
                     {currentTab === '大语言模型设置' && <LlmSettings/>}

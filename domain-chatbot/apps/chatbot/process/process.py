@@ -11,21 +11,25 @@ from ..utils.datatime_utils import get_current_time_str
 from ..output.realtime_message_queue import realtime_callback
 from ..output.chat_history_queue import conversation_end_callback
 from ..llms.function import PortraitObservation
+from ..llms.llm_model_strategy import LlmModelDriver
 
 
 logger = logging.getLogger(__name__)
 
 
 class ProcessCore():
+    llm_model_driver: LlmModelDriver
+    llm_model_driver_type: str
     portrait_observation: PortraitObservation
 
     def __init__(self) -> None:
+        self.llm_model_driver = singleton_sys_config.llm_model_driver
+        self.llm_model_driver_type = singleton_sys_config.conversation_llm_model_driver_type
         # 加载自定义角色生成模块
         self.singleton_character_generation = singleton_character_generation
 
         # 加载用户画像识别模块
-        self.portrait_observation = PortraitObservation(llm_model_driver=singleton_sys_config.llm_model_driver,
-                                                        llm_model_driver_type=singleton_sys_config.conversation_llm_model_driver_type)
+        self.portrait_observation = PortraitObservation()
 
     def chat(self, user_name: str, user_text: str):
         # 生成角色prompt
@@ -51,16 +55,16 @@ class ProcessCore():
             prompt = prompt.format(long_history=long_history, current_time=current_time)
 
             # 调用大语言模型流式生成对话
-            singleton_sys_config.llm_model_driver.chatStream(type=singleton_sys_config.conversation_llm_model_driver_type,
-                                                             prompt=prompt,
-                                                             user_name=user_name,
-                                                             user_text=user_text,
-                                                             role_name=role_name,
-                                                             history=short_history,
-                                                             realtime_callback=realtime_callback,
-                                                             conversation_end_callback=conversation_end_callback)
+            self.llm_model_driver.chatStream(type=self.llm_model_driver_type,
+                                             prompt=prompt,
+                                             user_name=user_name,
+                                             user_text=user_text,
+                                             role_name=role_name,
+                                             history=short_history,
+                                             realtime_callback=realtime_callback,
+                                             conversation_end_callback=conversation_end_callback)
         except Exception as e:
-            error_message = "我的大脑出现了问题，请通知开发者修复我！"
             traceback.print_exc()
             logger.error("chat error: %s" % str(e))
+            error_message = "出现了问题，请通知开发者修复我！"
             realtime_callback(user_name=user_name, role_name=role_name, content=error_message, end_bool=True)

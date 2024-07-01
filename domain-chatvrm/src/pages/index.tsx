@@ -259,15 +259,15 @@ export default function Home() {
             //     "happy",
             // );
 
-            const yourName = user_name == null || user_name == '' ? globalConfig?.characterConfig?.yourName : user_name
+            const userName = user_name == null || user_name == '' ? globalConfig?.userName : user_name
             // ユーザーの発言を追加して表示
             const messageLog: Message[] = [
                 ...chatLog,
-                {role: "user", content: content, "user_name": yourName},
+                {role: "user", content: content, "user_name": userName},
             ];
             setChatLog(messageLog);
 
-            await chat(content, yourName).catch(
+            await chat(content, userName).catch(
                 (e) => {
                     console.error(e);
                     return null;

@@ -1,7 +1,7 @@
 import datetime
 import logging
-import jieba
-import jieba.analyse
+# import jieba
+# import jieba.analyse
 from django.db.models import Q
 from typing import Any, Dict, List
 
@@ -30,7 +30,6 @@ class LocalStorage:
         # 计算分页偏移量
         offset = (page_num - 1) * page_size
 
-        # 分页查询，并提取 text 字段
         results = LocalMemoryModel.objects.filter(Q(role_name=role_name) & Q(user_name=user_name)).order_by('-timestamp')[offset:offset + page_size]
         result_list = [{"user": result.user_text, "ai": result.role_text} for result in results]
         return result_list

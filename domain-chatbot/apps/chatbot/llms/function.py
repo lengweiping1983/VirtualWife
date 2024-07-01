@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 
 from ..utils.chat_message_utils import format_message
 from ..utils.snowflake_utils import SnowFlake
-from ..config.sys_config import SysConfig
+from ..config import singleton_sys_config
 from ..llms.llm_model_strategy import LlmModelDriver
 
 
@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 class Summary:
 
-    sys_config: SysConfig
     llm_model_driver: LlmModelDriver
     llm_model_driver_type: str
     prompt: str = """# 摘要助手AI
@@ -63,10 +62,9 @@ class Summary:
         {text}
         """
 
-    def __init__(self, sys_config: SysConfig) -> None:
-        self.sys_config = sys_config
-        self.llm_model_driver = self.sys_config.llm_model_driver
-        self.llm_model_driver_type = self.sys_config.conversation_llm_model_driver_type
+    def __init__(self) -> None:
+        self.llm_model_driver = singleton_sys_config.llm_model_driver
+        self.llm_model_driver_type = singleton_sys_config.conversation_llm_model_driver_type
 
     def summary(self, text: str) -> str:
         content = self.input_prompt.format(text=text)
@@ -96,7 +94,6 @@ class Summary:
 
 class ImportanceRating:
 
-    sys_config: SysConfig
     llm_model_driver: LlmModelDriver
     llm_model_driver_type: str
     prompt: str = """# 重要性评分助手AI
@@ -144,10 +141,9 @@ class ImportanceRating:
         {text}
         """
 
-    def __init__(self, sys_config: SysConfig) -> None:
-        self.sys_config = sys_config
-        self.llm_model_driver = self.sys_config.llm_model_driver
-        self.llm_model_driver_type = self.sys_config.conversation_llm_model_driver_type
+    def __init__(self) -> None:
+        self.llm_model_driver = singleton_sys_config.llm_model_driver
+        self.llm_model_driver_type = singleton_sys_config.conversation_llm_model_driver_type
     
     def importance(self, text: str) -> int:
         content = self.input_prompt.format(text=text)
@@ -223,9 +219,9 @@ class GenerationEmote():
         {text}
         """
 
-    def __init__(self, llm_model_driver: LlmModelDriver, llm_model_driver_type: str) -> None:
-        self.llm_model_driver = llm_model_driver
-        self.llm_model_driver_type = llm_model_driver_type
+    def __init__(self) -> None:
+        self.llm_model_driver = singleton_sys_config.llm_model_driver
+        self.llm_model_driver_type = singleton_sys_config.conversation_llm_model_driver_type
 
     def generation_emote(self, text: str) -> str:
         content = self.input_prompt.format(text=text)
@@ -307,9 +303,9 @@ class PortraitObservation:
         {text}
         """
 
-    def __init__(self, llm_model_driver: LlmModelDriver, llm_model_driver_type: str) -> None:
-        self.llm_model_driver = llm_model_driver
-        self.llm_model_driver_type = llm_model_driver_type
+    def __init__(self) -> None:
+        self.llm_model_driver = singleton_sys_config.llm_model_driver
+        self.llm_model_driver_type = singleton_sys_config.conversation_llm_model_driver_type
 
     def observation(self, text: str) -> str:
         content = self.input_prompt.format(text=text)
@@ -386,9 +382,9 @@ class TopicBot:
         {text}
         """
 
-    def __init__(self, llm_model_driver: LlmModelDriver, llm_model_driver_type: str) -> None:
-        self.llm_model_driver = llm_model_driver
-        self.llm_model_driver_type = llm_model_driver_type
+    def __init__(self) -> None:
+        self.llm_model_driver = singleton_sys_config.llm_model_driver
+        self.llm_model_driver_type = singleton_sys_config.conversation_llm_model_driver_type
 
     def generation_topic(self, text: str) -> str:
         content = self.input_prompt.format(text=text)

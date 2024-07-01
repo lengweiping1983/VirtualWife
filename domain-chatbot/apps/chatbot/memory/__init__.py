@@ -17,7 +17,7 @@ def lazy_memory_storage(sys_config_json: any, sys_config: any):
         "password": sys_config_json["memoryStorageConfig"]["milvusMemory"]["password"],
         "db_name": sys_config_json["memoryStorageConfig"]["milvusMemory"]["dbName"],
     }
-    logger.info(f"=> memory_storage_config:{memory_storage_config}")
+    logger.info(f"=> memory_storage_config: {memory_storage_config}")
     # 加载记忆模块驱动
     return MemoryStorageDriver(memory_storage_config=memory_storage_config, sys_config=sys_config)
 

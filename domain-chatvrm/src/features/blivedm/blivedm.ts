@@ -4,7 +4,8 @@ const environment = process.env.NODE_ENV;
 // 定义基础URL
 let baseUrl = "";
 if (environment === "development") {
-  baseUrl = ":8000";
+  // baseUrl = ":8000";
+  baseUrl = "/api/chatbot";
 } else if (environment === "production") {
   baseUrl = "/api/chatbot";
 } else {

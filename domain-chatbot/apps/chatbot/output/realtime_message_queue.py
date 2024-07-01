@@ -6,9 +6,7 @@ import traceback
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
-from ..config import singleton_sys_config
 from ..utils.chat_message_utils import format_chat_text
-from ..utils.str_utils import remove_special_characters, remove_emojis
 from ..llms.function import GenerationEmote
 
 
@@ -72,25 +70,27 @@ def realtime_callback(user_name: str, role_name: str, content: str, end_bool: bo
         realtime_callback.message_buffer = ""
 
     realtime_callback.message_buffer += content
-    # 如果 content 以结束标点符号或空结尾，打印并清空缓冲区
-    if re.match(r"^(.+[。．！？\n]|.{10,}[、,])", realtime_callback.message_buffer) or end_bool:
-        realtime_callback.message_buffer = format_chat_text(
-            user_name, role_name, realtime_callback.message_buffer)
-
-        # 删除表情符号和一些特定的特殊符号，防止语音合成失败
+    # 如果 content 以结束标点符号或结束符结尾，打印并清空缓冲区
+    message_text = ""
+    if end_bool:
         message_text = realtime_callback.message_buffer
-        message_text = remove_emojis(message_text)
-        message_text = remove_special_characters(message_text)
-        print("realtime_callback message_text=%s".format(message_text))
+        realtime_callback.message_buffer = ""
+    else:
+        match = re.match(r"^(.+[。．！？\n]|.{10,}[、,])", realtime_callback.message_buffer)
+        if match:
+            message_text = match.group()
+            realtime_callback.message_buffer = realtime_callback.message_buffer[len(message_text):]
+        else:
+            return
+    if message_text != "":
+        message_text = format_chat_text(user_name, role_name, message_text)
         if message_text != "":
             # 生成人物表情
-            generation_emote = GenerationEmote(llm_model_driver=singleton_sys_config.llm_model_driver,
-                                               llm_model_driver_type=singleton_sys_config.conversation_llm_model_driver_type)
+            generation_emote = GenerationEmote()
             emote = generation_emote.generation_emote(text=message_text)
 
             # 发送文本消息
             put_message(RealtimeMessage(type="user", user_name=user_name, content=message_text, emote=emote))
-        realtime_callback.message_buffer = ""
 
 
 class RealtimeMessageQueryJobTask():

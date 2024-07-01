@@ -29,5 +29,4 @@ pypinyin==0.50.0
 bilibili-api-python==16.1.1
 faiss-cpu==1.7.4
 FlagEmbedding==1.1.7
-openai==1.12.0
 litellm==1.34.6

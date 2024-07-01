@@ -9,8 +9,10 @@ let baseUrl = "";
 let mediaUrl = "";
 
 if (environment === "development") {
-  baseUrl = "http://localhost:8000";
-  mediaUrl = "http://localhost:8000";
+  baseUrl = "/api/chatbot";
+  mediaUrl = "/api/media";
+  // baseUrl = "http://localhost:8000";
+  // mediaUrl = "http://localhost:8000";
 } else if (environment === "production") {
   baseUrl = "/api/chatbot";
   mediaUrl = "/api/media";

@@ -13,11 +13,10 @@ logger = logging.getLogger(__name__)
 
 
 def observe_memory_job():
-    topic_bot = TopicBot(llm_model_driver=singleton_sys_config.llm_model_driver,
-                         llm_model_driver_type=singleton_sys_config.conversation_llm_model_driver_type)
+    topic_bot = TopicBot()
     character = singleton_character_generation.get_character(singleton_sys_config.character)
     role_name = character.role_name
-    user_name = singleton_sys_config.yourName
+    user_name = singleton_sys_config.user_name
 
     # 拉取最近的记忆和对话上下文
     local_memory = memory_storage_driver.search_short_memory(user_name=user_name, user_text=None, role_name=role_name)

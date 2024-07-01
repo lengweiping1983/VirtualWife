@@ -26,25 +26,21 @@ class MemoryStorageDriver:
         if sys_config.enable_longMemory:
             self.long_memory_storage = MilvusStorage(memory_storage_config)
 
-    def search_short_memory(self, user_name: str, user_text: str, role_name: str) -> list[Dict[str, str]]:
+    def search_short_memory(self, user_name: str, user_text: str, role_name: str, limit: int = 10) -> list[Dict[str, str]]:
         local_memory = self.short_memory_storage.pageQuery(role_name=role_name, user_name=user_name,
-                                                           page_num=1, page_size=self.sys_config.local_memory_num)
+                                                           page_num=1, page_size=limit)
         return local_memory
 
-    def search_long_memory(self, user_name: str, user_text: str, role_name: str) -> str:
+    def search_long_memory(self, user_name: str, user_text: str, role_name: str, limit: int = 10) -> str:
         # 是否开启长期记忆
         if self.sys_config.enable_longMemory:
             try:
                 long_history = ""
                 # 获取长期记忆
                 long_memory = self.long_memory_storage.search(role_name=role_name, user_name=user_name,
-                                                              text=user_text, limit=self.sys_config.search_memory_size)
+                                                              text=user_text, limit=limit)
                 if len(long_memory) > 0:
-                    summary_historys = []
-                    # 将json字符串转换为字典
-                    for i in range(len(long_memory)):
-                        summary_historys.append(long_memory[i])
-                    long_history = "\n".join(summary_historys)
+                    long_history = "\n".join(long_memory)
                 return long_history
             except Exception as e:
                 traceback.print_exc()
@@ -58,13 +54,12 @@ class MemoryStorageDriver:
         # 是否开启长期记忆
         if self.sys_config.enable_longMemory:
             # 将当前对话语句生成摘要
-            history = format_message(
-                user_name=user_name, user_text=user_text, role_name=role_name, role_text=role_text)
+            history = format_message(user_name=user_name, user_text=user_text, role_name=role_name, role_text=role_text)
             importance_score = 3
             if self.sys_config.enable_summary:
-                summary = Summary(self.sys_config)
+                summary = Summary()
                 history = summary.summary(text=history)
-                importance_rating = ImportanceRating(self.sys_config)
+                importance_rating = ImportanceRating()
                 importance_score = importance_rating.importance(text=history)
             self.long_memory_storage.save(role_name=role_name, user_name=user_name, text=history, importance_score=importance_score, pk=pk)
 

@@ -2,61 +2,61 @@ import {getRequest, postRequest} from "../httpclient/httpclient";
 
 // 定义formData初始状态 shape
 export const initialFormData = {
-    "liveStreamingConfig": {
-        "B_ROOM_ID": "27892212",
-        "B_COOKIE": ""
+  "userName": "张大",
+  "languageModelConfig": {
+    "openai": {
+      "OPENAI_API_KEY": "sk-",
+      "OPENAI_BASE_URL": ""
     },
-    "enableProxy": false,
-    "enableLive": false,
-    "httpProxy": "http://host.docker.internal:23457",
-    "httpsProxy": "https://host.docker.internal:23457",
-    "socks5Proxy": "socks5://host.docker.internal:23457",
-    "languageModelConfig": {
-        "openai": {
-            "OPENAI_API_KEY": "sk-",
-            "OPENAI_BASE_URL": ""
-        },
-        "ollama": {
-            "OLLAMA_API_BASE": "http://localhost:11434",
-            "OLLAMA_API_MODEL_NAME": "qwen:7b"
-        }
-    },
-    "characterConfig": {
-        "character": 1,
-        "character_name": "爱莉",
-        "yourName": "yuki129",
-        "vrmModel": "\u308f\u305f\u3042\u3081_03.vrm",
-        "vrmModelType": "system"
-    },
-    "conversationConfig": {
-        "conversationType": "default",
-        "languageModel": "openai"
-    },
-    "memoryStorageConfig": {
-        "milvusMemory": {
-            "host": "127.0.0.1",
-            "port": "19530",
-            "user": "user",
-            "password": "Milvus",
-            "dbName": "default"
-        },
-        "zep_memory": {
-            "zep_url": "http://localhost:8881",
-            "zep_optional_api_key": "optional_api_key"
-        },
-        "enableLongMemory": false,
-        "enableSummary": false,
-        "languageModelForSummary": "openai",
-        "enableReflection": false,
-        "languageModelForReflection": "openai"
-    },
-    "custom_role_template_type": "zh",
-    "background_id": 1,
-    "background_url": "",
-    "ttsConfig": {
-        "ttsType": "Edge",
-        "ttsVoiceId": "zh-CN-XiaoyiNeural"
+    "ollama": {
+      "OLLAMA_API_BASE": "http://localhost:11434",
+      "OLLAMA_API_MODEL_NAME": "qwen:7b"
     }
+  },
+  "conversationConfig": {
+    "conversationType": "default",
+    "languageModel": "openai"
+  },
+  "memoryStorageConfig": {
+    "zep_memory": {
+      "zep_url": "http://localhost:8881",
+      "zep_optional_api_key": "optional_api_key"
+    },
+    "milvusMemory": {
+      "host": "127.0.0.1",
+      "port": "19530",
+      "user": "user",
+      "password": "Milvus",
+      "dbName": "default"
+    },
+    "enableLongMemory": true,
+    "enableSummary": true,
+    "languageModelForSummary": "openai",
+    "enableReflection": true,
+    "languageModelForReflection": "openai"
+  },
+  "characterConfig": {
+    "character": 1,
+    "character_name": "杨幂",
+    "vrmModel": "hailey.vrm",
+    "vrmModelType": "system"
+  },
+  "custom_role_template_type": "zh",
+  "background_id": 1,
+  "background_url": "",
+  "ttsConfig": {
+    "ttsType": "Edge",
+    "ttsVoiceId": "zh-CN-XiaoyiNeural"
+  },
+  "enableProxy": false,
+  "httpProxy": "http://host.docker.internal:23457",
+  "httpsProxy": "https://host.docker.internal:23457",
+  "socks5Proxy": "socks5://host.docker.internal:23457",
+  "enableLive": false,
+  "liveStreamingConfig": {
+    "B_ROOM_ID": "27892212",
+    "B_COOKIE": ""
+  }
 }
 
 // 定义类型别名
