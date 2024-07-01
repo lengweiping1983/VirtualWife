@@ -19,7 +19,7 @@ class OpenAIGeneration:
     def __init__(self) -> None:
         from dotenv import load_dotenv
         load_dotenv()
-        os.environ["OPENAI_API_KEY"] = "sk-proj-xuMwAoRDRqykJ2yDiUVzT3BlbkFJgtw5NHuvB86gW7Yj6wye"
+        os.environ["OPENAI_API_KEY"] = "sk-"
         # self.openai_base_url = os.environ["OPENAI_BASE_URL"]
         # self.openai_api_key = os.environ["OPENAI_API_KEY"]
     
