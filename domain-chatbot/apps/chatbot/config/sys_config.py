@@ -24,14 +24,14 @@ class SysConfig:
     reflection_llm_model_driver_type: str
     zep_url: str
     zep_optional_api_key: str
-    short_memory_num: int = 5
-    long_memory_num: int = 5
-    summary_memory_num: int = 6
-    topic_memory_num: int = 7
-    emotion_memory_num: int = 8
+    short_memory_num: int = 15
+    long_memory_num: int = 10
+    summary_memory_num: int = 15
+    topic_memory_num: int = 20
+    emotion_memory_num: int = 25
     character: int
     character_name: str
-    userNameSet = set(str)
+    userNameSet = set()
     room_id: str
     
     def __init__(self) -> None:

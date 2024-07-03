@@ -26,7 +26,7 @@ def chat(request):
       聊天
     '''
     data = json.loads(request.body.decode('utf-8'))
-    process_core.chat(user_name=data["userName"], user_text=data["message"])
+    process_core.chat(user_name=data["userName"], user_text=data["content"])
     return Response({"response": "OK", "code": "200"})
 
 

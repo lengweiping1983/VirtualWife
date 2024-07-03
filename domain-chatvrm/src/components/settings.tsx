@@ -37,8 +37,8 @@ import {damp} from 'three/src/math/MathUtils';
 import {join} from 'path';
 import {voiceData, getVoices} from '@/features/tts/ttsApi';
 
-// const tabNames = ['用户设置', '基础设置', '自定义角色设置', '大语言模型设置', '记忆模块设置', '高级设置'];
-const tabNames = ['用户设置'];
+const tabNames = ['用户设置', '基础设置', '自定义角色设置', '大语言模型设置', '记忆模块设置', '高级设置'];
+// const tabNames = ['用户设置'];
 const llm_enums = ["openai", "ollama"]
 
 const publicDir = join(process.cwd(), 'public');
@@ -167,7 +167,6 @@ export const Settings = ({
 
     // 用户设置组件
     const UserSettings = () => {
-
         return (
             <div className="globals-settings">
 
@@ -178,6 +177,7 @@ export const Settings = ({
                         <input type="text" defaultValue={formData.userName}
                                onChange={e => {
                                    formData.userName = e.target.value
+                                   window.localStorage.setItem("userName", formData.userName);
                                    setFormData(formData);
                                }}/>
                     </div>

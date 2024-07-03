@@ -1,7 +1,8 @@
-import { Configuration, OpenAIApi } from "openai";
+// import { Configuration, OpenAIApi } from "openai";
 import { Message } from "../messages/messages";
 import { postRequest } from "../httpclient/httpclient";
 
+/*
 export async function getChatResponse(messages: Message[], apiKey: string) {
   if (!apiKey) {
     throw new Error("Invalid API Key");
@@ -85,10 +86,10 @@ export async function getChatResponseStream(
 
   return stream;
 }
-
+*/
 
 export async function chat(
-  message: string,
+  content: string,
   userName: string
 ) {
 
@@ -97,7 +98,7 @@ export async function chat(
   };
 
   const body = {
-    message: message,
+    content: content,
     userName: userName
   };
   
