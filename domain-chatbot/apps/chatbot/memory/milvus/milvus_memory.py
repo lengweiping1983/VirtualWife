@@ -15,13 +15,14 @@ class MilvusMemory():
 
     def __init__(self, host: str, port: str, user: str, password: str, db_name: str):
 
-        connections.connect(
-            host=host,
-            port=port,
-            user=user,
-            password=password,
-            db_name=db_name,
-        )
+        if singleton_sys_config.enable_longMemory:
+            connections.connect(
+                host=host,
+                port=port,
+                user=user,
+                password=password,
+                db_name=db_name,
+            )
 
         # 定义记忆Stream集合Schema、创建记忆Stream集合
         fields = [
