@@ -34,6 +34,9 @@ import {generateMediaUrl, vrmModelData} from "@/features/media/mediaApi";
 let socketInstance: WebSocket | null = null;
 let bind_message_event = false;
 let webGlobalConfig = initialFormData
+var allMessageLogAssistant: Message[] = [
+
+];
 
 export default function Home() {
 
@@ -146,21 +149,34 @@ export default function Home() {
         // 文ごとに音声を生成 & 再生、返答を表示
         const currentAssistantMessage = sentences.join(" ");
         setSubtitle(aiTextLog);
-        handleSpeakAi(globalConfig, aiTalks[0], () => {
-            setAssistantMessage(currentAssistantMessage);
-            // handleSubtitle(aiText + " "); // 添加空格以区分不同的字幕
-            startTypewriterEffect(aiTextLog);
+        // lengweiping begin
+        setAssistantMessage(currentAssistantMessage);
+        // handleSubtitle(aiText + " "); // 添加空格以区分不同的字幕
+        // startTypewriterEffect(aiTextLog);
+        handleSubtitle(aiTextLog);
+        // アシスタントの返答をログに追加
+        const messageLogAssistant: Message[] = [
+            ...allMessageLogAssistant,
+            {role: "assistant", content: aiTextLog, "user_name": user_name},
+        ];
+        allMessageLogAssistant = messageLogAssistant
+        setChatLog(messageLogAssistant);
+        // lengweiping end
+        // handleSpeakAi(globalConfig, aiTalks[0], () => {
+            // setAssistantMessage(currentAssistantMessage);
+            // // handleSubtitle(aiText + " "); // 添加空格以区分不同的字幕
+            // startTypewriterEffect(aiTextLog);
 
-            // アシスタントの返答をログに追加
-            const params = JSON.parse(
-                window.localStorage.getItem("chatVRMParams") as string
-            );
-            const messageLogAssistant: Message[] = [
-                ...params.chatLog,
-                {role: "assistant", content: aiTextLog, "user_name": user_name},
-            ];
-            setChatLog(messageLogAssistant);
-        });
+            // // アシスタントの返答をログに追加
+            // const params = JSON.parse(
+            //     window.localStorage.getItem("chatVRMParams") as string
+            // );
+            // const messageLogAssistant: Message[] = [
+            //     ...params.chatLog,
+            //     {role: "assistant", content: aiTextLog, "user_name": user_name},
+            // ];
+            // setChatLog(messageLogAssistant);
+        // });
     }, [])
 
     const handleDanmakuMessage = (

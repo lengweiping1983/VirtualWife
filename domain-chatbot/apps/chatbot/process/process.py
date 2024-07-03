@@ -28,6 +28,9 @@ class ProcessCore():
         self.singleton_character_generation = singleton_character_generation
 
     def chat(self, user_name: str, user_text: str):
+        if user_name not in singleton_sys_config.userNameSet:
+            singleton_sys_config.userNameSet.add(user_name)
+        
         # 生成角色prompt
         character = self.singleton_character_generation.get_character(singleton_sys_config.character)
         role_name = character.role_name
@@ -85,6 +88,7 @@ class EmotionBot():
         3. 尊重隐私: 避免触及用户敏感信息，确保所有分析结果不侵犯用户隐私。
         4. 中立性: 保持中立和客观，不表达偏见或倾向性意见。
         5. 敏感处理: 对潜在敏感或痛苦的情感需特别小心，确保语言温和、不引发二次伤害。
+        6. 创新性：在提供引导性话语时，确保话语具有创新性，不与对话中已讨论的内容重复，以促进新的思考和情感体验。
 
         ### OutputFormat
         1. 以纯文本方式回复，避免特殊字符。
@@ -149,6 +153,7 @@ class TopicBot:
         3. 敏感处理: 避免触及可能引起争议或不适当的话题，确保所有话题适合当前对话背景。
         4. 中立性: 保持中立和客观，不表达任何偏见或倾向性意见。
         5. 实用性: 提供的话题应具备讨论价值或实用性，能够引导对话深入或提供有效回复。
+        6. 避免重复：在生成话题时，应避免重复对话中已经提及的内容，确保每个话题都是新的、有深度的讨论点。
 
         ### OutputFormat
         1. 以纯文本方式回复，避免特殊字符。

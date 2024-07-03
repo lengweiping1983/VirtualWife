@@ -31,7 +31,7 @@ class SysConfig:
     emotion_memory_num: int = 8
     character: int
     character_name: str
-    user_name: str
+    userNameSet = set(str)
     room_id: str
     
     def __init__(self) -> None:
@@ -128,10 +128,6 @@ class SysConfig:
         logger.debug("=> character Config")
         logger.debug(f"character:{character}")
         logger.debug(f"character_name:{character_name}")
-
-        user_name = sys_config_json["userName"]
-        self.user_name = user_name
-        logger.debug(f"user_name:{user_name}")
         
         # 是否开启proxy
         enableProxy = sys_config_json["enableProxy"]

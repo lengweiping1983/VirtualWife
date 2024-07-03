@@ -1,5 +1,4 @@
 {
-  "userName": "张大",
   "languageModelConfig": {
     "openai": {
       "OPENAI_API_KEY": "sk-",
