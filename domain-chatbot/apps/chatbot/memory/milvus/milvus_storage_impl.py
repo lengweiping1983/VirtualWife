@@ -14,7 +14,7 @@ class MilvusStorage:
         self.milvus_memory = MilvusMemory(
             host=host, port=port, user=user, password=password, db_name=db_name)
 
-    def search(self, role_name: str, user_name: str, text: str, limit: int) -> list[str]:
+    def search(self, role_name: str, user_name: str, text: str, limit: int, memories_size: int=10) -> list[str]:
         '''检索记忆,只返回关联性最强的记忆'''
         self.milvus_memory.load()
         expr = f"role_name == '{role_name}' and user_name == '{user_name}'"
@@ -29,7 +29,6 @@ class MilvusStorage:
 
         if len(memories) > 0:
             memories_text = [item['text'] for item in memories]
-            memories_size = 5
             memories_text = memories_text[:memories_size] if len(
                 memories_text) >= memories_size else memories_text
             return memories_text

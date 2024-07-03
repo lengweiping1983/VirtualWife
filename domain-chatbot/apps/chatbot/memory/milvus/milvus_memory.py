@@ -2,19 +2,16 @@ import os
 import time
 from pymilvus import DataType, FieldSchema, CollectionSchema, Collection, connections
 
-from ...utils.snowflake_utils import SnowFlake
 from ...config import singleton_sys_config
 
 
 _COLLECTION_NAME = "virtual_wife"
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 class MilvusMemory():
 
-    collection: Collection
     schema: CollectionSchema
-    snow_flake: SnowFlake
+    collection: Collection
 
     def __init__(self, host: str, port: str, user: str, password: str, db_name: str):
 
@@ -26,7 +23,7 @@ class MilvusMemory():
             db_name=db_name,
         )
 
-        # 定义记忆Stream集合schema、创建记忆Stream集合
+        # 定义记忆Stream集合Schema、创建记忆Stream集合
         fields = [
             FieldSchema(name="id", dtype=DataType.INT64, is_primary=True),
             FieldSchema(name="text", dtype=DataType.VARCHAR, max_length=2000),
@@ -58,7 +55,7 @@ class MilvusMemory():
                 [importance_score], [embedding]]
         self.collection.insert(data)
 
-    def compute_relevance(self, text: str, limit: int, expr: str = None):
+    def compute_relevance(self, text: str, limit: int, expr: str=None):
         '''定义计算相关性分数函数'''
         # 搜索表达式
         search_result = self.search_memory(text, limit, expr)
@@ -77,7 +74,7 @@ class MilvusMemory():
 
         return hits
 
-    def search_memory(self, text: str, limit: int, expr: str = None):
+    def search_memory(self, text: str, limit: int, expr: str=None):
         # 使用语言模型获得文本embedding向量
         embedding = singleton_sys_config.llm_model_driver.get_embedding(type=singleton_sys_config.conversation_llm_model_driver_type,
                                                                         text=text)
@@ -105,6 +102,16 @@ class MilvusMemory():
             )
 
         return vector_hits[0]
+    
+    def pageQuery(self, offset: int, limit: int, expr: str):
+        vector_hits = self.collection.query(
+            offset=offset,
+            limit=limit,
+            expr=expr,
+            output_fields=["id", "text", "user_name", "role_name",
+                           "timestamp", "importance_score"]
+        )
+        return vector_hits
 
     def compute_recency(self, memories):
         '''定义计算最近性分数函数'''
@@ -117,16 +124,6 @@ class MilvusMemory():
         for memory in memories:
             memory["total_score"] = memory["relevance"] + memory["importance_score"] + memory["recency"]
 
-    def pageQuery(self, expr: str, offset: int, limit: int):
-        vector_hits = self.collection.query(
-            expr=expr,
-            offset=offset,
-            limit=limit,
-            output_fields=["id", "text", "user_name", "role_name",
-                           "timestamp", "importance_score"]
-        )
-        return vector_hits
-
     def load(self):
         self.collection.load()
 
@@ -135,9 +132,9 @@ class MilvusMemory():
 
     def clear(self, role_name: str):
         ids_result = self.collection.query(
-            expr=f"role_name == '{role_name}'",
             offset=0,
             limit=100,
+            expr=f"role_name == '{role_name}'",
             output_fields=["id"])
         ids = [item['id'] for item in ids_result]
         ids_expr = f"id in {ids}"

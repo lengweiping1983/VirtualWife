@@ -31,7 +31,3 @@ def remove_special_characters(input_string) -> str:
     cleaned_string = re.sub(pattern, '', input_string)
 
     return cleaned_string
-
-
-input_string = "1+1等于2。"
-print(remove_special_characters(input_string))

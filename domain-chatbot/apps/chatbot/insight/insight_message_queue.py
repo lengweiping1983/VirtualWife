@@ -1,6 +1,6 @@
-import logging
 import queue
 import threading
+import logging
 import traceback
 
 from ..utils.chat_message_utils import format_user_chat_text

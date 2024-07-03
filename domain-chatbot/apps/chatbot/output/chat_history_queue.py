@@ -1,7 +1,6 @@
-import json
-import logging
 import queue
 import threading
+import logging
 import traceback
 
 from ..llms.base_llm_model import ChatHistroy
@@ -22,19 +21,22 @@ class ChatHistoryMessage():
     user_text: str
     role_name: str
     role_text: str
+    automatic: int
 
-    def __init__(self, user_name: str, user_text: str, role_name: str, role_text: str) -> None:
+    def __init__(self, user_name: str, user_text: str, role_name: str, role_text: str, automatic: int) -> None:
         self.user_name = user_name
         self.user_text = user_text
         self.role_name = role_name
         self.role_text = role_text
+        self.automatic = automatic
 
     def to_dict(self):
         return {
             "user_name": self.user_name,
             "user_text": self.user_text,
             "role_name": self.role_name,
-            "role_text": self.role_text
+            "role_text": self.role_text,
+            "automatic": self.automatic
         }
 
 
@@ -50,11 +52,11 @@ def send_message():
             message = chat_history_queue.get()
             if message is not None and message != '':
                 # 存储到记忆库中
-                memory_storage_driver.save(
-                    message.user_name, message.user_text, message.role_name, message.role_text)
+                memory_storage_driver.save_short_memory(
+                    message.user_name, message.user_text, message.role_name, message.role_text, message.automatic)
                 
                 # # 判断当前记忆的重要性
-                # memory = format_user_message(message.user_name, message.user_text, need_speaker=True)
+                # memory = format_user_message(message.user_name, message.user_text)
                 # rating = singleton_sys_config.importance_rating.rating(memory)
 
                 # # 如果当前记忆的重要性大于5，进行一次人物画像更新
@@ -87,13 +89,16 @@ def format_histroy(recently_memory: list[ChatHistroy]) -> str:
     return "\n".join(chat_histroy_str)
 
 
-def conversation_end_callback(user_name: str, user_text: str, role_name: str, role_text: str):
+def conversation_end_callback(user_name: str, user_text: str, role_name: str, role_text: str, automatic: int):
+    if automatic != 0 and role_text.lower() == "null":
+        return
     # 异步存储记忆
     put_message(ChatHistoryMessage(
         user_name=user_name,
         user_text=user_text,
         role_name=role_name,
-        role_text=role_text
+        role_text=role_text,
+        automatic=automatic
     ))
 
 

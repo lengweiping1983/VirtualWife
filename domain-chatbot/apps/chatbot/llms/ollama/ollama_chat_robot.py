@@ -1,12 +1,12 @@
 import os
 import logging
-from typing import List
+from typing import Any, Dict, List
 from litellm import completion
 from litellm import embedding
 
-from ...utils.chat_message_utils import format_chat_text, format_user_message
+from ...utils.chat_message_utils import format_chat_text
 from ...utils.str_utils import remove_spaces_and_tabs
-from ..base_llm_model import ChatHistroy, BaseLlmModel
+from ..base_llm_model import BaseLlmModel
 
 
 logger = logging.getLogger(__name__)
@@ -25,60 +25,71 @@ class OllamaGeneration(BaseLlmModel):
 
     def chat(self,
              prompt: str,
+             content: str,
              user_name: str,
              user_text: str,
              role_name: str,
-             short_history: list[ChatHistroy],
-             long_history: str) -> str:
-        messages = []
-        if prompt is not None and prompt != "":
-            messages.append({"role": "system", "content": prompt})
-        messages.append({"role": "user", "content": user_text})
+             short_history: List[Dict[str, str]],
+             model_name: str=None,
+             temperature: float=-1) -> str:
+        messages = self.get_messages(prompt=prompt,
+                                     content=content,
+                                     user_name=user_name,
+                                     user_text=user_text,
+                                     role_name=role_name,
+                                     short_history=short_history)
+        completion_model_name = model_name if model_name is not None and model_name != "" else self.completion_model_name
+        temperature = temperature if temperature > 0 else self.temperature
         if self.ollama_base_url:
             response = completion(
-                model=self.completion_model_name,
+                model=completion_model_name,
                 messages=messages,
                 api_base=self.ollama_base_url,
-                temperature=self.temperature,
+                temperature=temperature,
             )
         else:
             response = completion(
-                model=self.completion_model_name,
+                model=completion_model_name,
                 messages=messages,
-                temperature=self.temperature,
+                temperature=temperature,
             )
         llm_result_text = response.choices[0].message.content if response.choices else ""
         return llm_result_text
 
     async def chatStream(self,
                          prompt: str,
+                         content: str,
                          user_name: str,
                          user_text: str,
                          role_name: str,
-                         history: list[str, str],
+                         short_history: List[Dict[str, str]],
+                         automatic: int=0,
                          realtime_callback=None,
-                         conversation_end_callback=None):
-        messages = []
-        if prompt is not None and prompt != "":
-            messages.append({"role": "system", "content": prompt})
-        for item in history:
-            messages.append({"role": "user", "content": item["user"]})
-            messages.append({"role": "assistant", "content": item["ai"]})
-        messages.append({"role": "user", "content": format_user_message(user_name, user_text, need_speaker=True)})
+                         conversation_end_callback=None,
+                         model_name: str=None,
+                         temperature: float=-1):
+        messages = self.get_messages(prompt=prompt,
+                                     content=content,
+                                     user_name=user_name,
+                                     user_text=user_text,
+                                     role_name=role_name,
+                                     short_history=short_history)
+        completion_model_name = model_name if model_name is not None and model_name != "" else self.completion_model_name
+        temperature = temperature if temperature > 0 else self.temperature
         if self.ollama_base_url:
             response = completion(
-                model=self.completion_model_name,
+                model=completion_model_name,
                 messages=messages,
                 api_base=self.ollama_base_url,
                 stream=True,
-                temperature=self.temperature,
+                temperature=temperature,
             )
         else:
             response = completion(
-                model=self.completion_model_name,
+                model=completion_model_name,
                 messages=messages,
                 stream=True,
-                temperature=self.temperature,
+                temperature=temperature,
             )
 
         role_text = ""
@@ -95,14 +106,14 @@ class OllamaGeneration(BaseLlmModel):
                         continue
                     role_text += content
                     if realtime_callback:
-                        realtime_callback(user_name, role_name, content, False)  # 调用实时消息推送的回调函数
+                        realtime_callback(user_name, role_name, content, automatic, False)  # 调用实时消息推送的回调函数
 
         if realtime_callback:
-            realtime_callback(user_name, role_name, "", True)
+            realtime_callback(user_name, role_name, "", automatic, True)
         
         role_text = format_chat_text(user_name, role_name, role_text)
         if conversation_end_callback:
-            conversation_end_callback(user_name, user_text, role_name, role_text)  # 调用对话结束消息的回调函数
+            conversation_end_callback(user_name, user_text, role_name, role_text, automatic)  # 调用对话结束消息的回调函数
 
     def get_embedding(self, text: str):
         text = text.replace("\n", " ")

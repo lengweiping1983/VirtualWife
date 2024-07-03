@@ -1,7 +1,7 @@
 import re
-import logging
 import queue
 import threading
+import logging
 import traceback
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -65,7 +65,7 @@ def send_message():
             traceback.print_exc()
 
 
-def realtime_callback(user_name: str, role_name: str, content: str, end_bool: bool):
+def realtime_callback(user_name: str, role_name: str, content: str, automatic: int, end_bool: bool):
     if not hasattr(realtime_callback, "message_buffer"):
         realtime_callback.message_buffer = ""
 
@@ -82,15 +82,17 @@ def realtime_callback(user_name: str, role_name: str, content: str, end_bool: bo
             realtime_callback.message_buffer = realtime_callback.message_buffer[len(message_text):]
         else:
             return
+    message_text = format_chat_text(user_name, role_name, message_text)
+    if automatic != 0 and message_text.lower() == "null":
+        return
     if message_text != "":
-        message_text = format_chat_text(user_name, role_name, message_text)
-        if message_text != "":
-            # 生成人物表情
-            generation_emote = GenerationEmote()
-            emote = generation_emote.generation_emote(text=message_text)
+        # 生成人物表情
+        # generation_emote = GenerationEmote()
+        # emote = generation_emote.generation_emote(text=message_text)
+        emote = "neutral"
 
-            # 发送文本消息
-            put_message(RealtimeMessage(type="user", user_name=user_name, content=message_text, emote=emote))
+        # 发送文本消息
+        put_message(RealtimeMessage(type="user", user_name=user_name, content=message_text, emote=emote))
 
 
 class RealtimeMessageQueryJobTask():

@@ -24,11 +24,14 @@ class SysConfig:
     reflection_llm_model_driver_type: str
     zep_url: str
     zep_optional_api_key: str
-    local_memory_num: int = 10
-    search_memory_size: int = 10
+    short_memory_num: int = 5
+    long_memory_num: int = 5
+    summary_memory_num: int = 6
+    topic_memory_num: int = 7
+    emotion_memory_num: int = 8
     character: int
     character_name: str
-    your_name: str
+    user_name: str
     room_id: str
     
     def __init__(self) -> None:

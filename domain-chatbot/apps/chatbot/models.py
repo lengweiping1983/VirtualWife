@@ -56,13 +56,23 @@ class LocalMemoryModel(models.Model):
         role_name: 角色名
         role_text: 角色文本
         timestamp: 创建时间
+        automatic: 自动回答（0=否，1=是topic，2=是emotion）
+        summary: 生成摘要（0=否，1=是）
+        topic: 生成话题（0=否，1=是）
+        emotion: 生成情感（0=否，1=是）
+        deleted: 已删除（0=否，1=是）
     '''
     id = models.AutoField
     user_name = models.CharField(max_length=100)
-    user_text = models.TextField()
+    user_text = models.TextField(blank=True, null=True)
     role_name = models.CharField(max_length=100)
-    role_text = models.TextField()
+    role_text = models.TextField(blank=True, null=True)
     timestamp = models.DateTimeField()
+    automatic = models.IntegerField()
+    summary = models.IntegerField()
+    topic = models.IntegerField()
+    emotion = models.IntegerField()
+    deleted = models.IntegerField()
 
     def __str__(self):
         return self.id

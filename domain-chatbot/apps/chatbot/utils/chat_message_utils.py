@@ -30,23 +30,18 @@ def format_user_chat_text(text: str):
 
 def format_message(user_name: str, user_text: str, role_name: str, role_text: str):
     user_message = format_user_message(
-        user_name=user_name, user_text=user_text, need_speaker=True)
+        user_name=user_name, user_text=user_text)
     role_message = format_role_message(
-        role_name=role_name, role_text=role_text, need_speaker=True)
+        role_name=role_name, role_text=role_text)
     chat_message = user_message + '\n' + role_message
     return chat_message
 
 
-def format_user_message(user_name: str, user_text: str, need_speaker: bool):
-    if need_speaker:
-        user_message = f"{user_name}说{user_text}"
-        return user_message
-    else:
-        return user_text
+def format_user_message(user_name: str, user_text: str):
+    user_message = f"{user_name}：{user_text}"
+    return user_message
 
 
-def format_role_message(role_name: str, role_text: str, need_speaker: bool):
-    if need_speaker:
-        role_message = f"{role_name}说{role_text}"
-        return role_message
-    return role_text
+def format_role_message(role_name: str, role_text: str):
+    role_message = f"你：{role_text}"
+    return role_message
