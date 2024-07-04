@@ -14,6 +14,21 @@ sys_code = "adminSettings"
 logger = logging.getLogger(__name__)
 
 
+def lazy_memory_storage(sys_config_json: any):
+    from ..memory.memory_storage import MemoryStorageDriver
+    # 加载记忆模块配置
+    memory_storage_config = {
+        "host": sys_config_json["memoryStorageConfig"]["milvusMemory"]["host"],
+        "port": sys_config_json["memoryStorageConfig"]["milvusMemory"]["port"],
+        "user": sys_config_json["memoryStorageConfig"]["milvusMemory"]["user"],
+        "password": sys_config_json["memoryStorageConfig"]["milvusMemory"]["password"],
+        "db_name": sys_config_json["memoryStorageConfig"]["milvusMemory"]["dbName"],
+    }
+    logger.info(f"=> memory_storage_config: {memory_storage_config}")
+    # 加载记忆模块驱动
+    return MemoryStorageDriver(memory_storage_config=memory_storage_config)
+
+
 class SysConfig:
     llm_model_driver: LlmModelDriver
     conversation_llm_model_driver_type: str
@@ -33,6 +48,7 @@ class SysConfig:
     character_name: str
     userNameSet = set()
     room_id: str
+    memory_storage_driver: any
     
     def __init__(self) -> None:
         self.bilibili_live_listener = None
@@ -145,6 +161,12 @@ class SysConfig:
             os.environ['HTTPS_PROXY'] = ""
             os.environ['SOCKS5_PROXY'] = ""
         
+        # 懒加载记忆模块
+        try:
+            self.memory_storage_driver = lazy_memory_storage(sys_config_json=sys_config_json)
+        except Exception as e:
+            logger.error("lazy memory_storage error: %s" % str(e))
+
         logger.info("=> Load SysConfig Success")
 
         # # 加载直播配置

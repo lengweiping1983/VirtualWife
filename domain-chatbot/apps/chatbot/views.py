@@ -11,7 +11,6 @@ from .serializers import CustomRoleSerializer, UploadedImageSerializer, Uploaded
 from .models import CustomRoleModel, BackgroundImageModel, VrmModel, RolePackageModel
 from .character import role_package_manage
 from .config import singleton_sys_config
-# from .memory import memory_storage_driver
 
 from .insight.bilibili_api.bili_live_client import lazy_bilibili_live
 from .process import process_core

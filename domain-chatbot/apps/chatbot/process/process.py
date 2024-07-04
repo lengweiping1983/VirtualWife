@@ -4,10 +4,9 @@ import traceback
 from rest_framework.generics import get_object_or_404
 
 from ..models import RolePackageModel
-from ..character import role_dialogue_example
+# from ..character import role_dialogue_example
 from ..character.character_generation import singleton_character_generation
 from ..config import singleton_sys_config
-from ..memory import memory_storage_driver
 from ..utils.datatime_utils import get_current_time_str
 from ..output.realtime_message_queue import realtime_callback
 from ..output.chat_history_queue import conversation_end_callback
@@ -36,18 +35,18 @@ class ProcessCore():
         role_name = character.role_name
         try:
             # 判断是否有角色安装包？如果有动态获取对话示例
-            if character.role_package_id != -1:
-                db_role_package_model = get_object_or_404(RolePackageModel, pk=character.role_package_id)
-                character.examples_of_dialogue = role_dialogue_example.generate(user_name, user_text,
-                                                                                db_role_package_model.dataset_json_path,
-                                                                                db_role_package_model.embed_index_idx_path,
-                                                                                role_name)
+            # if character.role_package_id != -1:
+            #     db_role_package_model = get_object_or_404(RolePackageModel, pk=character.role_package_id)
+            #     character.examples_of_dialogue = role_dialogue_example.generate(user_name, user_text,
+            #                                                                     db_role_package_model.dataset_json_path,
+            #                                                                     db_role_package_model.embed_index_idx_path,
+            #                                                                     role_name)
             prompt = self.singleton_character_generation.output_prompt(character)
 
             # 检索关联的短期记忆和长期记忆
-            short_history = memory_storage_driver.search_short_memory(
+            short_history = singleton_sys_config.memory_storage_driver.search_short_memory(
                 user_name=user_name, user_text=user_text, role_name=role_name, limit=singleton_sys_config.short_memory_num)
-            long_history = memory_storage_driver.search_long_memory(
+            long_history = singleton_sys_config.memory_storage_driver.search_long_memory(
                 user_name=user_name, user_text=user_text, role_name=role_name, limit=singleton_sys_config.long_memory_num)
             
             current_time = get_current_time_str()

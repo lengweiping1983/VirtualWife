@@ -4,106 +4,106 @@ import shutil
 import zipfile
 import numpy as np
 from typing import Optional
-import faiss
-from FlagEmbedding import FlagModel, FlagReranker
+# import faiss
+# from FlagEmbedding import FlagModel, FlagReranker
 
 
-class FlagModelFactory:
-    config: Optional[dict]
-    embed_model: FlagModel = None
-    reranker: FlagReranker = None
+# class FlagModelFactory:
+#     config: Optional[dict]
+#     embed_model: FlagModel = None
+#     reranker: FlagReranker = None
 
-    def __init__(self, config: Optional[dict]):
-        self.config = config
+#     def __init__(self, config: Optional[dict]):
+#         self.config = config
 
-    def get_embed_model(self):
-        # with lock:
-        if self.embed_model is None:
-            embed_model_path = self.config["embed_model_path"]
-            # 向量检索模型
-            self.embed_model = FlagModel(embed_model_path,
-                                         query_instruction_for_retrieval="为这个句子生成表示以用于检索相关文章：",
-                                         use_fp16=False)
-        return self.embed_model
+#     def get_embed_model(self):
+#         # with lock:
+#         if self.embed_model is None:
+#             embed_model_path = self.config["embed_model_path"]
+#             # 向量检索模型
+#             self.embed_model = FlagModel(embed_model_path,
+#                                          query_instruction_for_retrieval="为这个句子生成表示以用于检索相关文章：",
+#                                          use_fp16=False)
+#         return self.embed_model
 
-    def get_reranker(self):
-        # with lock:
-        if self.reranker is None:
-            reranker_model_path = self.config["reranker_model_path"]
-            self.reranker = FlagReranker(reranker_model_path, use_fp16=False)
-        return self.reranker
+#     def get_reranker(self):
+#         # with lock:
+#         if self.reranker is None:
+#             reranker_model_path = self.config["reranker_model_path"]
+#             self.reranker = FlagReranker(reranker_model_path, use_fp16=False)
+#         return self.reranker
 
 
-class RagSearch:
-    flag_model_factory: FlagModelFactory
+# class RagSearch:
+#     flag_model_factory: FlagModelFactory
 
-    def __init__(self, flag_model_factory: FlagModelFactory):
-        self.flag_model_factory = flag_model_factory
+#     def __init__(self, flag_model_factory: FlagModelFactory):
+#         self.flag_model_factory = flag_model_factory
 
-    def search(self, user_name: str, user_text: str, recall_k: int, rerank_k: int,
-               dataset_json_path: str, embed_index_idx_path: str, role_name: str):
-        with open(dataset_json_path, "r") as f:
-            index_source_json = json.load(f)
-        embed_index = faiss.read_index(embed_index_idx_path)  # build the index
+#     def search(self, user_name: str, user_text: str, recall_k: int, rerank_k: int,
+#                dataset_json_path: str, embed_index_idx_path: str, role_name: str):
+#         with open(dataset_json_path, "r") as f:
+#             index_source_json = json.load(f)
+#         embed_index = faiss.read_index(embed_index_idx_path)  # build the index
         
-        recall_sim_examples = self.__search_examples(self.flag_model_factory.get_embed_model(),
-                                                     index_source_json,
-                                                     embed_index,
-                                                     user_text,
-                                                     top_k=recall_k)
-        rerank_sim_examples = self.__rerank_examples(user_text, recall_sim_examples, rerank_k)
-        examples = self.__format_examples(user_name, role_name, rerank_sim_examples)
-        print(examples)
-        return examples
+#         recall_sim_examples = self.__search_examples(self.flag_model_factory.get_embed_model(),
+#                                                      index_source_json,
+#                                                      embed_index,
+#                                                      user_text,
+#                                                      top_k=recall_k)
+#         rerank_sim_examples = self.__rerank_examples(user_text, recall_sim_examples, rerank_k)
+#         examples = self.__format_examples(user_name, role_name, rerank_sim_examples)
+#         print(examples)
+#         return examples
 
-    def __get_q_a(self, item):
-        val_q = item["question"]
-        val_a = item["answer"]
-        return val_q, val_a
+#     def __get_q_a(self, item):
+#         val_q = item["question"]
+#         val_a = item["answer"]
+#         return val_q, val_a
 
-    def __search_examples(self, embed_model, index_source_json, embed_index, user_text, top_k=3):
-        xq = np.array([embed_model.encode(user_text)])
-        D, I = embed_index.search(xq, top_k)  # actual search
-        ret_array = []
-        for idx in I[0]:
-            source_item = index_source_json[idx]
-            source_q, source_a = self.__get_q_a(source_item)
-            ret_array.append([source_q, source_a])
-        return ret_array
+#     def __search_examples(self, embed_model, index_source_json, embed_index, user_text, top_k=3):
+#         xq = np.array([embed_model.encode(user_text)])
+#         D, I = embed_index.search(xq, top_k)  # actual search
+#         ret_array = []
+#         for idx in I[0]:
+#             source_item = index_source_json[idx]
+#             source_q, source_a = self.__get_q_a(source_item)
+#             ret_array.append([source_q, source_a])
+#         return ret_array
 
-    def __rerank_examples(self, user_text, similar_qas, top_k=3):
-        scores = self.flag_model_factory.get_reranker().compute_score([
-            [
-                user_text, q
-            ]
-            for q, _ in similar_qas
-        ])
-        scored_qas = [(score, similar_qas[i]) for i, score in enumerate(scores)]
-        sorted_qas = sorted(scored_qas, key=lambda x: x[0], reverse=True)
-        return [qa for _, qa in sorted_qas[:top_k]]
+#     def __rerank_examples(self, user_text, similar_qas, top_k=3):
+#         scores = self.flag_model_factory.get_reranker().compute_score([
+#             [
+#                 user_text, q
+#             ]
+#             for q, _ in similar_qas
+#         ])
+#         scored_qas = [(score, similar_qas[i]) for i, score in enumerate(scores)]
+#         sorted_qas = sorted(scored_qas, key=lambda x: x[0], reverse=True)
+#         return [qa for _, qa in sorted_qas[:top_k]]
     
-    def __format_examples(self, user_name: str, role_name: str, sim_examples):
-        examples = ""
-        for sim_example in sim_examples:
-            e_q = sim_example[0]
-            e_a = sim_example[1]
-            examples += f"{user_name}说" + e_q + "\n"
-            examples += f"{role_name}说" + e_a + "\n\n"
-        return examples
+#     def __format_examples(self, user_name: str, role_name: str, sim_examples):
+#         examples = ""
+#         for sim_example in sim_examples:
+#             e_q = sim_example[0]
+#             e_a = sim_example[1]
+#             examples += f"{user_name}说" + e_q + "\n"
+#             examples += f"{role_name}说" + e_a + "\n\n"
+#         return examples
 
 
-class RoleDialogueExample:
-    flag_model_factory: FlagModelFactory
-    rag_search: RagSearch
+# class RoleDialogueExample:
+#     flag_model_factory: FlagModelFactory
+#     rag_search: RagSearch
 
-    def __init__(self, config: Optional[dict]):
-        self.flag_model_factory = FlagModelFactory(config)
-        self.rag_search = RagSearch(self.flag_model_factory)
+#     def __init__(self, config: Optional[dict]):
+#         self.flag_model_factory = FlagModelFactory(config)
+#         self.rag_search = RagSearch(self.flag_model_factory)
 
-    def generate(self, user_name: str, user_text: str, dataset_json_path: str, embed_index_idx_path: str, role_name: str):
-        examples_of_dialogue = self.rag_search.search(user_name, user_text, 10, 5,
-                                                      dataset_json_path, embed_index_idx_path, role_name)
-        return examples_of_dialogue
+#     def generate(self, user_name: str, user_text: str, dataset_json_path: str, embed_index_idx_path: str, role_name: str):
+#         examples_of_dialogue = self.rag_search.search(user_name, user_text, 10, 5,
+#                                                       dataset_json_path, embed_index_idx_path, role_name)
+#         return examples_of_dialogue
 
 
 class RolePackageManage:

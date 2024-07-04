@@ -6,7 +6,6 @@ import traceback
 from ..llms.base_llm_model import ChatHistroy
 from ..utils.chat_message_utils import format_user_message
 from ..config import singleton_sys_config
-from ..memory import memory_storage_driver
 from ..service import portal_user_service
 
 
@@ -52,7 +51,7 @@ def send_message():
             message = chat_history_queue.get()
             if message is not None and message != '':
                 # 存储到记忆库中
-                memory_storage_driver.save_short_memory(
+                singleton_sys_config.memory_storage_driver.save_short_memory(
                     message.user_name, message.user_text, message.role_name, message.role_text, message.automatic)
                 
                 # # 判断当前记忆的重要性

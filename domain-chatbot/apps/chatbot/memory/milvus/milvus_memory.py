@@ -2,10 +2,8 @@ import os
 import time
 from pymilvus import DataType, FieldSchema, CollectionSchema, Collection, connections
 
-from ...config import singleton_sys_config
 
-
-_COLLECTION_NAME = "virtual_wife"
+_COLLECTION_NAME = "virtualwife"
 
 
 class MilvusMemory():
@@ -15,14 +13,13 @@ class MilvusMemory():
 
     def __init__(self, host: str, port: str, user: str, password: str, db_name: str):
 
-        if singleton_sys_config.enable_longMemory:
-            connections.connect(
-                host=host,
-                port=port,
-                user=user,
-                password=password,
-                db_name=db_name,
-            )
+        connections.connect(
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+            db_name=db_name,
+        )
 
         # 定义记忆Stream集合Schema、创建记忆Stream集合
         fields = [
@@ -45,13 +42,17 @@ class MilvusMemory():
         }
         self.collection.create_index("embedding", index)
 
-    def insert_memory(self, pk: int, text: str, user_name: str, role_name: str, importance_score: int):
-        '''定义插入记忆对象函数'''
-        timestamp = time.time()
-
+    def get_embedding(self, text: str):
+        from ...config import singleton_sys_config
         # 使用语言模型获得文本embedding向量
         embedding = singleton_sys_config.llm_model_driver.get_embedding(type=singleton_sys_config.conversation_llm_model_driver_type,
                                                                         text=text)
+        return embedding
+
+    def insert_memory(self, pk: int, text: str, user_name: str, role_name: str, importance_score: int):
+        '''定义插入记忆对象函数'''
+        timestamp = time.time()
+        embedding = self.get_embedding(text)
         data = [[pk], [text], [user_name], [role_name], [timestamp],
                 [importance_score], [embedding]]
         self.collection.insert(data)
@@ -76,9 +77,7 @@ class MilvusMemory():
         return hits
 
     def search_memory(self, text: str, limit: int, expr: str=None):
-        # 使用语言模型获得文本embedding向量
-        embedding = singleton_sys_config.llm_model_driver.get_embedding(type=singleton_sys_config.conversation_llm_model_driver_type,
-                                                                        text=text)
+        embedding = self.get_embedding(text)
         search_params = {"metric_type": "L2", "params": {"nprobe": 30}}
 
         vector_hits = None

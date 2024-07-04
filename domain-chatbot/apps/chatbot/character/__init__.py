@@ -1,6 +1,7 @@
 import os
 
-from .role_package_manage import RolePackageManage, RoleDialogueExample
+from .role_package_manage import RolePackageManage
+# from .role_package_manage import RoleDialogueExample
 
 root_path = os.getcwd()
 args = {
@@ -9,4 +10,4 @@ args = {
 }
 
 role_package_manage = RolePackageManage()
-role_dialogue_example = RoleDialogueExample(args)
+# role_dialogue_example = RoleDialogueExample(args)

@@ -3,6 +3,7 @@ import logging
 from typing import Any, Dict, List
 from django.db.models import Q
 
+
 from ...models import LocalMemoryModel
 
 
