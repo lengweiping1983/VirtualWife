@@ -2,31 +2,48 @@ import logging
 
 from ..models import PortalUser
 from ..utils import singleton_snow_flake
+from ..utils.json_utils import read_json, dumps_json
 
 
 logger = logging.getLogger(__name__)
 
 
 class PortalUserService:
-    def create(self, name: str) -> PortalUser:
-        portal_user = PortalUser(
+
+    def get_by_user_name(self, user_name: str) -> PortalUser:
+        portalUser = PortalUser.objects.filter(user_name=user_name).last()
+        if portalUser is None:
+            return self.save_by_user_name(user_name=user_name)
+        return portalUser
+
+    def save_by_user_name(self, user_name: str) -> PortalUser:
+        portalUser = PortalUser(
             id=singleton_snow_flake.task(),
-            name=name
-        )
-        portal_user.save()
-        return portal_user
-
-    def get_by_name(self, name: str) -> PortalUser:
-        '''
-            通过名称获取门户用户
-        '''
-        return PortalUser.objects.filter(name=name).last()
-
-    def get_and_create(self, name: str) -> PortalUser:
-        '''
-            通过名称获取门户用户，如果门户不存在，会自动创建一个
-        '''
-        portal_user = self.get_by_name(name)
-        if portal_user is None:
-            portal_user = self.create(name)
-        return portal_user
+            user_name=user_name
+            )
+        return self.save(portalUser)
+    
+    def save(self, portalUser: PortalUser) -> PortalUser:
+        if portalUser is None:
+            return
+        if portalUser.user_name is None or portalUser.user_name == "":
+            return
+        if portalUser.id is None:
+            portalUser.id = singleton_snow_flake.task()
+        if portalUser.portrait is None:
+            portrait = {
+                            "portrait": {
+                                "Persona": "未知",
+                                "Fictional name": portalUser.user_name,
+                                "Sex": "未知",
+                                "Job title/major responsibilities": "未知",
+                                "Demographics": "未知",
+                                "Goals and tasks": "未知",
+                                "Hobby": "未知",
+                                "Promise": "未知",
+                                "Topic": "未知"
+                            }
+                        }
+            portalUser.portrait = dumps_json(portrait)
+        portalUser.save()
+        return portalUser

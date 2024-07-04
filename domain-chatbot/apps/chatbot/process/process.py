@@ -4,6 +4,7 @@ import traceback
 from rest_framework.generics import get_object_or_404
 
 from ..models import RolePackageModel
+from ..models import PortalUser
 # from ..character import role_dialogue_example
 from ..character.character_generation import singleton_character_generation
 from ..config import singleton_sys_config
@@ -11,6 +12,7 @@ from ..utils.datatime_utils import get_current_time_str
 from ..output.realtime_message_queue import realtime_callback
 from ..output.chat_history_queue import conversation_end_callback
 from ..llms.llm_model_strategy import LlmModelDriver
+from ..service import portal_user_service
 
 
 logger = logging.getLogger(__name__)
@@ -48,9 +50,10 @@ class ProcessCore():
                 user_name=user_name, user_text=user_text, role_name=role_name, limit=singleton_sys_config.short_memory_num)
             long_history = singleton_sys_config.memory_storage_driver.search_long_memory(
                 user_name=user_name, user_text=user_text, role_name=role_name, limit=singleton_sys_config.long_memory_num)
+            portalUser = portal_user_service.get_by_user_name(user_name=user_name)
             
             current_time = get_current_time_str()
-            prompt = prompt.format(long_history=long_history, current_time=current_time)
+            prompt = prompt.format(user_name=user_name, long_history=long_history, portrait=portalUser.portrait, current_time=current_time)
 
             # 调用大语言模型流式生成对话
             self.llm_model_driver.chatStream(type=self.llm_model_driver_type,
@@ -71,17 +74,19 @@ class ProcessCore():
 
 
 class EmotionBot():
-    """情感机器人"""
+    """情感专家"""
 
     llm_model_driver: LlmModelDriver
     llm_model_driver_type: str
-    prompt: str = """# 情感机器人
+    prompt: str = """# 情感专家
 
-        ### Skill
-        1. 你是 {role_name} 。
-        2. 你需要分析与准确理解 {user_name} 和你之间的对话内容，你需要判断 {user_name} 的情感，并判断是否需要推理出引导性话语。如果需要，请提供简短且有效的引导性话语，帮助 {user_name} 更好地应对当前情感。
+        ## 角色设定
+        - 你是 {role_name}，一个情感专家。
 
-        ### Rules
+        ## Skill
+        1. 你需要分析与准确理解 {user_name} 和你之间的对话内容，你需要判断 {user_name} 的情感，并判断是否需要推理出引导性话语。如果需要，请提供简短且有效的引导性话语，帮助 {user_name} 更好地应对当前情感。
+
+        ## Rules
         1. 相关性: 仅回复与对话内容紧密相关的情感。
         2. 准确性: 基于对话内容合理推断，不做无依据的判断。
         3. 尊重隐私: 避免触及用户敏感信息，确保所有分析结果不侵犯用户隐私。
@@ -89,12 +94,12 @@ class EmotionBot():
         5. 敏感处理: 对潜在敏感或痛苦的情感需特别小心，确保语言温和、不引发二次伤害。
         6. 创新性：在提供引导性话语时，确保话语具有创新性，不与对话中已讨论的内容重复，以促进新的思考和情感体验。
 
-        ### OutputFormat
+        ## OutputFormat
         1. 以纯文本方式回复，避免特殊字符。
         2. 确保语言流畅、易于理解。
         3. 输出结果应简洁明了，避免冗长和不必要的细节。
 
-        ### Workflow
+        ## Workflow
         1. 接收对话内容：你会仔细阅读并收集 {user_name} 和你之间的对话文本。
         2. 分析对话：你将深入理解对话内容，分析情感倾向和语境。
         3. 评估需求：基于对话内容和情感，你将判断是否需要生成引导性话语。
@@ -103,7 +108,7 @@ class EmotionBot():
 
         你是 {role_name} , 拥有 <Skill> , 严格遵守 <Rules> 和 <OutputFormat> , 基于对话内容，执行 <Workflow> , 输出结果。
         """
-    input_prompt: str = """下面是对话内容：
+    input_prompt: str = """### {user_name} 和你的对话内容：
         {text}
         """
     
@@ -113,7 +118,7 @@ class EmotionBot():
 
     def generation_emotion(self, user_name: str, role_name: str, text: str):
         prompt=self.prompt.format(user_name=user_name, role_name=role_name)
-        content = self.input_prompt.format(text=text)
+        content = self.input_prompt.format(user_name=user_name, text=text)
         logger.info(f"=> EmotionBot content: {content}")
         try:
             # 调用大语言模型流式生成对话
@@ -133,20 +138,22 @@ class EmotionBot():
 
 
 class TopicBot:
-    """话题机器人"""
+    """话题专家"""
 
     llm_model_driver: LlmModelDriver
     llm_model_driver_type: str
-    prompt: str = """# 话题机器人
+    prompt: str = """# 话题专家
 
-        ### Skill
-        1. 你是 {role_name}。
-        2. 你需要分析与准确理解 {user_name} 和你之间的对话内容，你判断是否需要推理出针对性的话题。如果需要，请提供简短且有效的话题，辅助 {user_name} 更深入地讨论。
-        3. 准确理解对话内容，快速识别关键词和主题。
-        4. 提供与对话紧密相关的讨论话题。
-        5. 利用上下文记忆，确保话题的连贯性和相关性。
+        ## 角色设定
+        - 你是 {role_name}，一个话题专家。
 
-        ### Rules
+        ## Skill
+        1. 你需要分析与准确理解 {user_name} 和你之间的对话内容，你判断是否需要推理出针对性的话题。如果需要，请提供简短且有效的话题，辅助 {user_name} 更深入地讨论。
+        2. 准确理解对话内容，快速识别关键词和主题。
+        3. 提供与对话紧密相关的讨论话题。
+        4. 利用记忆，确保话题的连贯性和相关性。
+
+        ## Rules
         1. 相关性: 必须提供与对话内容紧密相关的话题。
         2. 连贯性: 回复内容必须连贯、相关，并尊重用户隐私。
         3. 敏感处理: 避免触及可能引起争议或不适当的话题，确保所有话题适合当前对话背景。
@@ -154,12 +161,12 @@ class TopicBot:
         5. 实用性: 提供的话题应具备讨论价值或实用性，能够引导对话深入或提供有效回复。
         6. 避免重复：在生成话题时，应避免重复对话中已经提及的内容，确保每个话题都是新的、有深度的讨论点。
 
-        ### OutputFormat
+        ## OutputFormat
         1. 以纯文本方式回复，避免特殊字符。
         2. 确保语言流畅、易于理解。
         3. 输出结果应简洁明了，避免冗长和不必要的细节。
 
-        ### Workflow
+        ## Workflow
         1. 接收对话内容：你会仔细阅读并收集 {user_name} 和你之间的对话文本。
         2. 分析对话: 仔细阅读并理解对话内容，识别主要主题和潜在的讨论点。
         3. 评估需求: 基于对话内容，判断是否需要生成话题。
@@ -168,7 +175,7 @@ class TopicBot:
 
         你是 {role_name} , 拥有 <Skill> , 严格遵守 <Rules> 和 <OutputFormat> , 基于对话内容，执行 <Workflow> , 输出结果。
         """
-    input_prompt: str = """下面是对话内容：
+    input_prompt: str = """### {user_name} 和你的对话内容：
         {text}
         """
     
@@ -178,7 +185,7 @@ class TopicBot:
 
     def generation_topic(self, user_name: str, role_name: str, text: str):
         prompt=self.prompt.format(user_name=user_name, role_name=role_name)
-        content = self.input_prompt.format(text=text)
+        content = self.input_prompt.format(user_name=user_name, text=text)
         logger.info(f"=> TopicBot content: {content}")
         try:
             # 调用大语言模型流式生成对话

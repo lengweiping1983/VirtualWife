@@ -3,7 +3,7 @@ import time
 from pymilvus import DataType, FieldSchema, CollectionSchema, Collection, connections
 
 
-_COLLECTION_NAME = "virtualwife"
+_COLLECTION_NAME = "summary"
 
 
 class MilvusMemory():
@@ -11,16 +11,7 @@ class MilvusMemory():
     schema: CollectionSchema
     collection: Collection
 
-    def __init__(self, host: str, port: str, user: str, password: str, db_name: str):
-
-        connections.connect(
-            host=host,
-            port=port,
-            user=user,
-            password=password,
-            db_name=db_name,
-        )
-
+    def __init__(self):
         # 定义记忆Stream集合Schema、创建记忆Stream集合
         fields = [
             FieldSchema(name="id", dtype=DataType.INT64, is_primary=True),
@@ -56,6 +47,7 @@ class MilvusMemory():
         data = [[pk], [text], [user_name], [role_name], [timestamp],
                 [importance_score], [embedding]]
         self.collection.insert(data)
+        self.collection.flush()
 
     def compute_relevance(self, text: str, limit: int, expr: str=None):
         '''定义计算相关性分数函数'''

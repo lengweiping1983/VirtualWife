@@ -5,14 +5,8 @@ class MilvusStorage:
     '''Milvus向量存储记忆模块'''
     milvus_memory: MilvusMemory
 
-    def __init__(self, memory_storage_config: dict[str, str]):
-        host = memory_storage_config["host"]
-        port = memory_storage_config["port"]
-        user = memory_storage_config["user"]
-        password = memory_storage_config["password"]
-        db_name = memory_storage_config["db_name"]
-        self.milvus_memory = MilvusMemory(
-            host=host, port=port, user=user, password=password, db_name=db_name)
+    def __init__(self, sys_config_json: any):
+        self.milvus_memory = MilvusMemory()
 
     def search(self, role_name: str, user_name: str, text: str, limit: int, memories_size: int=10) -> list[str]:
         '''检索记忆,只返回关联性最强的记忆'''

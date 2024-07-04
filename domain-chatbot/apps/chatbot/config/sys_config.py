@@ -16,17 +16,10 @@ logger = logging.getLogger(__name__)
 
 def lazy_memory_storage(sys_config_json: any):
     from ..memory.memory_storage import MemoryStorageDriver
-    # 加载记忆模块配置
-    memory_storage_config = {
-        "host": sys_config_json["memoryStorageConfig"]["milvusMemory"]["host"],
-        "port": sys_config_json["memoryStorageConfig"]["milvusMemory"]["port"],
-        "user": sys_config_json["memoryStorageConfig"]["milvusMemory"]["user"],
-        "password": sys_config_json["memoryStorageConfig"]["milvusMemory"]["password"],
-        "db_name": sys_config_json["memoryStorageConfig"]["milvusMemory"]["dbName"],
-    }
-    logger.info(f"=> memory_storage_config: {memory_storage_config}")
+    milvus_memory_storage_config = sys_config_json["memoryStorageConfig"]["milvusMemory"]
+    logger.info(f"=> milvus_memory_storage_config: {milvus_memory_storage_config}")
     # 加载记忆模块驱动
-    return MemoryStorageDriver(memory_storage_config=memory_storage_config)
+    return MemoryStorageDriver(sys_config_json=sys_config_json)
 
 
 class SysConfig:

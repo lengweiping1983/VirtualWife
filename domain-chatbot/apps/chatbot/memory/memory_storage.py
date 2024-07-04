@@ -5,6 +5,7 @@ from typing import Any, Dict, List
 from ..utils.snowflake_utils import SnowFlake
 from .local.local_storage_impl import LocalStorage
 from .milvus.milvus_storage_impl import MilvusStorage
+from pymilvus import DataType, FieldSchema, CollectionSchema, Collection, connections
 
 
 logger = logging.getLogger(__name__)
@@ -15,9 +16,24 @@ class MemoryStorageDriver:
     short_memory_storage: LocalStorage
     long_memory_storage: MilvusStorage
 
-    def __init__(self, memory_storage_config: dict[str, str]) -> None:
-        self.short_memory_storage = LocalStorage(memory_storage_config)
-        self.long_memory_storage = MilvusStorage(memory_storage_config)
+    def __init__(self, sys_config_json: any) -> None:
+        milvus_memory_storage_config = sys_config_json["memoryStorageConfig"]["milvusMemory"]
+        host = milvus_memory_storage_config["host"]
+        port = milvus_memory_storage_config["port"]
+        user = milvus_memory_storage_config["user"]
+        password = milvus_memory_storage_config["password"]
+        db_name = milvus_memory_storage_config["dbName"]
+
+        print(milvus_memory_storage_config)
+        connections.connect(
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+            db_name=db_name,
+        )
+        self.short_memory_storage = LocalStorage(sys_config_json)
+        self.long_memory_storage = MilvusStorage(sys_config_json)
 
     def search_short_memory(self, user_name: str, user_text: str, role_name: str, limit: int=15) -> list[Dict[str, str]]:
         local_memory = self.short_memory_storage.pageQuery(role_name=role_name, user_name=user_name,

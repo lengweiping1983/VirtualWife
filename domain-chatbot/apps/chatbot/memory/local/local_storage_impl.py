@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class LocalStorage:
 
-    def __init__(self, memory_storage_config: dict[str, str]):
+    def __init__(self, sys_config_json: any):
         logger.info("=> Init LocalStorage Success")
 
     def pageQuery(self, role_name: str, user_name: str, page_num: int, page_size: int,

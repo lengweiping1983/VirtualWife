@@ -1,14 +1,17 @@
 import logging
 import threading
 import traceback
+from ..utils.json_utils import read_json, dumps_json
 from ..utils.chat_message_utils import format_user_message, format_role_message
 from ..config import singleton_sys_config
 from ..character.character_generation import singleton_character_generation
-from ..llms.function import Summary, ImportanceRating
+from ..llms.function import Summary, ImportanceRating, PortraitAnalysis
+from ..service import portal_user_service
 
 
 singleton_summary = Summary()
 singleton_importance_rating = ImportanceRating()
+singleton_portrait_analysis = PortraitAnalysis()
 logger = logging.getLogger(__name__)
 
 
@@ -32,6 +35,12 @@ def summary_memory_job():
                     singleton_sys_config.memory_storage_driver.save_long_memory(
                         role_name=role_name, user_name=user_name, text=summary_text, importance_score=importance_score)
                 singleton_sys_config.memory_storage_driver.short_memory_storage.update_list_summary(local_memory)
+
+                portalUser = portal_user_service.get_by_user_name(user_name=user_name)
+                portrait_json = singleton_portrait_analysis.portrait(user_name=user_name, role_name=role_name, text=local_memory_str, portrait=portalUser.portrait)
+                if portrait_json:
+                    portalUser.portrait = dumps_json(portrait_json)
+                    portal_user_service.save(portalUser)
             except Exception as e:
                 traceback.print_exc()
                 logger.error("summary error: %s" % str(e))
