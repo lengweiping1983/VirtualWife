@@ -75,7 +75,7 @@ class SysConfig:
         logger.debug("======================== Load SysConfig ========================")
         from dotenv import load_dotenv
         load_dotenv()
-        logger.info(f"OPENAI_API_KEY: {os.environ['OPENAI_API_KEY']}")
+        logger.info(f"OPENAI_API_KEY: {os.environ.get('OPENAI_API_KEY')}")
         sys_config_json = self.get()
 
         os.environ['TOKENIZERS_PARALLELISM'] = "false"
@@ -84,7 +84,7 @@ class SysConfig:
         OPENAI_API_KEY = sys_config_json["languageModelConfig"]["openai"]["OPENAI_API_KEY"]
         if OPENAI_API_KEY is not None and len(OPENAI_API_KEY) > 10:
             os.environ['OPENAI_API_KEY'] = sys_config_json["languageModelConfig"]["openai"]["OPENAI_API_KEY"]
-        os.environ['OPENAI_BASE_URL'] = sys_config_json["languageModelConfig"]["openai"]["OPENAI_BASE_URL"]
+            os.environ['OPENAI_BASE_URL'] = sys_config_json["languageModelConfig"]["openai"]["OPENAI_BASE_URL"]
         ollama = sys_config_json["languageModelConfig"].get("ollama")
         if ollama:
             os.environ['OLLAMA_API_BASE'] = ollama.get("OLLAMA_API_BASE", "http://localhost:11434")
