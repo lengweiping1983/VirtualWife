@@ -102,12 +102,13 @@ class PortraitObservation:
         self.llm_model_driver = singleton_sys_config.llm_model_driver
         self.llm_model_driver_type = singleton_sys_config.conversation_llm_model_driver_type
 
-    def observation(self, text: str) -> str:
+    def observation(self, user_name: str, role_name: str, text: str) -> str:
+        prompt=self.prompt.format(user_name=user_name, role_name=role_name)
         content = self.input_prompt.format(text=text)
         logger.info(f"=> PortraitObservation content: {content}")
         result = self.llm_model_driver.chat(type=self.llm_model_driver_type,
-                                            prompt=self.prompt,
-                                            content=content，
+                                            prompt=prompt,
+                                            content=content,
                                             user_name=None,
                                             user_text=None,
                                             role_name=None,
