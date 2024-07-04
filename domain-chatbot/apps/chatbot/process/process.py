@@ -1,7 +1,6 @@
 import json
 import logging
 import traceback
-from rest_framework.generics import get_object_or_404
 
 from ..models import RolePackageModel
 from ..models import PortalUser
@@ -40,7 +39,7 @@ class ProcessCore():
         try:
             # 判断是否有角色安装包？如果有动态获取对话示例
             # if character.role_package_id != -1:
-            #     db_role_package_model = get_object_or_404(RolePackageModel, pk=character.role_package_id)
+            #     db_role_package_model = RolePackageModel.objects.filter(pk=character.role_package_id).first()
             #     character.examples_of_dialogue = role_dialogue_example.generate(user_name, user_text,
             #                                                                     db_role_package_model.dataset_json_path,
             #                                                                     db_role_package_model.embed_index_idx_path,

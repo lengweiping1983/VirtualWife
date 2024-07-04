@@ -1,5 +1,3 @@
-from django.shortcuts import get_object_or_404
-
 from ..models import CustomRoleModel
 from .character import Character
 from .default_character import character_list
@@ -16,7 +14,7 @@ class CharacterGeneration():
 
     def get_character(self, role_id: int) -> Character:
         '''获取自定义角色对象'''
-        character_model = get_object_or_404(CustomRoleModel, pk=role_id)
+        character_model = CustomRoleModel.objects.filter(pk=role_id).first()
         if character_model is not None:
             character = Character(
                 role_id=character_model.id,

@@ -1,7 +1,6 @@
 import os
 import json
 import logging
-from django.shortcuts import get_object_or_404
 
 from ..llms.llm_model_strategy import LlmModelDriver
 from ..models import CustomRoleModel, SysConfigModel
@@ -120,7 +119,7 @@ class SysConfig:
         try:
             logger.debug("=> init character:")
             for default_character in character_list:
-                character_model = get_object_or_404(CustomRoleModel, pk=default_character.role_id)
+                character_model = CustomRoleModel.objects.filter(pk=default_character.role_id).first()
                 if character_model is None:
                     custom_role = CustomRoleModel(
                         id=default_character.role_id,
