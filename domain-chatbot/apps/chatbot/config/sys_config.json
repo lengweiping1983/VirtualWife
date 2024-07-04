@@ -1,8 +1,7 @@
 {
-  "userName": "张大",
   "languageModelConfig": {
     "openai": {
-      "OPENAI_API_KEY": "sk-",
+      "OPENAI_API_KEY": "",
       "OPENAI_BASE_URL": ""
     },
     "ollama": {

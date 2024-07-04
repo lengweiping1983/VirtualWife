@@ -23,8 +23,6 @@ class MemoryStorageDriver:
         user = milvus_memory_storage_config["user"]
         password = milvus_memory_storage_config["password"]
         db_name = milvus_memory_storage_config["dbName"]
-
-        print(milvus_memory_storage_config)
         connections.connect(
             host=host,
             port=port,

@@ -29,6 +29,8 @@ class ProcessCore():
         self.singleton_character_generation = singleton_character_generation
 
     def chat(self, user_name: str, user_text: str):
+        if user_name is None or user_name == "":
+            return
         if user_name not in singleton_sys_config.userNameSet:
             singleton_sys_config.userNameSet.add(user_name)
         
@@ -51,9 +53,10 @@ class ProcessCore():
             long_history = singleton_sys_config.memory_storage_driver.search_long_memory(
                 user_name=user_name, user_text=user_text, role_name=role_name, limit=singleton_sys_config.long_memory_num)
             portalUser = portal_user_service.get_by_user_name(user_name=user_name)
+            portrait = portalUser.portrait if portalUser is not None else ""
             
             current_time = get_current_time_str()
-            prompt = prompt.format(user_name=user_name, long_history=long_history, portrait=portalUser.portrait, current_time=current_time)
+            prompt = prompt.format(user_name=user_name, long_history=long_history, portrait=portrait, current_time=current_time)
 
             # 调用大语言模型流式生成对话
             self.llm_model_driver.chatStream(type=self.llm_model_driver_type,

@@ -38,7 +38,7 @@ import {join} from 'path';
 import {voiceData, getVoices} from '@/features/tts/ttsApi';
 
 // const tabNames = ['用户设置', '基础设置', '自定义角色设置', '大语言模型设置', '记忆模块设置', '高级设置'];
-const tabNames = ['用户设置'];
+const tabNames = ['用户设置', '大语言模型设置'];
 const llm_enums = ["openai", "ollama"]
 
 const publicDir = join(process.cwd(), 'public');
@@ -174,11 +174,11 @@ export const Settings = ({
                     <div className="title">用户设置</div>
                     <div className="field">
                         <label>你的名字</label>
-                        <input type="text" defaultValue={formData.userName}
+                        <input type="text" defaultValue={window.localStorage.getItem("userName") as string}
                                onChange={e => {
-                                   formData.userName = e.target.value
-                                   window.localStorage.setItem("userName", formData.userName);
-                                   setFormData(formData);
+                                   // formData.userName = e.target.value
+                                   // setFormData(formData);
+                                   window.localStorage.setItem("userName", e.target.value);
                                }}/>
                     </div>
                 </div>

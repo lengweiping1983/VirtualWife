@@ -2,10 +2,9 @@ import {getRequest, postRequest} from "../httpclient/httpclient";
 
 // 定义formData初始状态 shape
 export const initialFormData = {
-  "userName": "张大",
   "languageModelConfig": {
     "openai": {
-      "OPENAI_API_KEY": "sk-",
+      "OPENAI_API_KEY": "",
       "OPENAI_BASE_URL": ""
     },
     "ollama": {

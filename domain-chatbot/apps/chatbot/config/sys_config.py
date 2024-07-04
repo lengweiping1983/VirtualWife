@@ -1,10 +1,11 @@
 import os
 import json
 import logging
+from django.shortcuts import get_object_or_404
 
 from ..llms.llm_model_strategy import LlmModelDriver
 from ..models import CustomRoleModel, SysConfigModel
-from ..character.default_character import default_character
+from ..character.default_character import character_list
 from ..utils.json_utils import read_json, dumps_json
 
 
@@ -79,7 +80,9 @@ class SysConfig:
         os.environ['TOKENIZERS_PARALLELISM'] = "false"
 
         # 加载大语言模型配置
-        os.environ['OPENAI_API_KEY'] = sys_config_json["languageModelConfig"]["openai"]["OPENAI_API_KEY"]
+        OPENAI_API_KEY = sys_config_json["languageModelConfig"]["openai"]["OPENAI_API_KEY"]
+        if OPENAI_API_KEY is not None and len(OPENAI_API_KEY) > 10:
+            os.environ['OPENAI_API_KEY'] = sys_config_json["languageModelConfig"]["openai"]["OPENAI_API_KEY"]
         os.environ['OPENAI_BASE_URL'] = sys_config_json["languageModelConfig"]["openai"]["OPENAI_BASE_URL"]
         ollama = sys_config_json["languageModelConfig"].get("ollama")
         if ollama:
@@ -113,21 +116,23 @@ class SysConfig:
 
         # 初始化默认角色
         try:
-            result = CustomRoleModel.objects.all()
-            if len(result) == 0:
-                logger.debug("=> load default character")
-                custom_role = CustomRoleModel(
-                    role_name=default_character.role_name,
-                    persona=default_character.persona,
-                    personality=default_character.personality,
-                    scenario=default_character.scenario,
-                    examples_of_dialogue=default_character.examples_of_dialogue,
-                    custom_role_template_type=default_character.custom_role_template_type,
-                    role_package_id=default_character.role_package_id
-                )
-                custom_role.save()
+            logger.debug("=> init character:")
+            for default_character in character_list:
+                character_model = get_object_or_404(CustomRoleModel, pk=default_character.role_id)
+                if character_model is None:
+                    custom_role = CustomRoleModel(
+                        id=default_character.role_id,
+                        role_name=default_character.role_name,
+                        persona=default_character.persona,
+                        personality=default_character.personality,
+                        scenario=default_character.scenario,
+                        examples_of_dialogue=default_character.examples_of_dialogue,
+                        custom_role_template_type=default_character.custom_role_template_type,
+                        role_package_id=default_character.role_package_id
+                    )
+                    custom_role.save()
         except Exception as e:
-            logger.error("=> load default character error: %s" % str(e))
+            logger.error("=> init character error: %s" % str(e))
         
         # 加载角色配置
         character = sys_config_json["characterConfig"]["character"]

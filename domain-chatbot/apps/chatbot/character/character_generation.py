@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 
 from ..models import CustomRoleModel
 from .character import Character
-from .default_character import default_character
+from .default_character import character_list
 from .base_character_template import BaseCharacterTemplate
 from .character_template_zh import ChineseCharacterTemplate
 
@@ -16,10 +16,10 @@ class CharacterGeneration():
 
     def get_character(self, role_id: int) -> Character:
         '''获取自定义角色对象'''
-        character = default_character
         character_model = get_object_or_404(CustomRoleModel, pk=role_id)
         if character_model is not None:
             character = Character(
+                role_id=character_model.id,
                 role_name=character_model.role_name,
                 persona=character_model.persona,
                 personality=character_model.personality,
@@ -28,6 +28,8 @@ class CharacterGeneration():
                 custom_role_template_type=character_model.custom_role_template_type,
                 role_package_id=character_model.role_package_id
             )
+        if character is None:
+            character = character_list[0]
         return character
 
     def output_prompt(self, character: Character) -> str:

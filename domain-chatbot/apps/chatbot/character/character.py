@@ -7,6 +7,7 @@ class Character():
     scenario: 角色的对话情况和背景
     examples_of_dialogue: 角色的对话样例
     '''
+    role_id: int
     role_name: str
     persona: str
     personality: str
@@ -15,8 +16,9 @@ class Character():
     custom_role_template_type: str
     role_package_id: int
 
-    def __init__(self, role_name: str, persona: str, personality: str, scenario: str, examples_of_dialogue: str,
+    def __init__(self, role_id: int, role_name: str, persona: str, personality: str, scenario: str, examples_of_dialogue: str,
                  custom_role_template_type: str, role_package_id: int) -> None:
+        self.role_id = role_id
         self.role_name = role_name
         self.persona = persona
         self.personality = personality
@@ -27,6 +29,7 @@ class Character():
 
     def to_dict(self):
         return {
+            "role_id": self.role_id,
             "role_name": self.role_name,
             "persona": self.persona,
             "personality": self.personality,

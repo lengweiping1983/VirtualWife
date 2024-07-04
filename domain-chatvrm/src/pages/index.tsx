@@ -273,8 +273,9 @@ export default function Home() {
             //     "thinking",
             //     "happy",
             // );
+            const userNameLocalStorage = window.localStorage.getItem("userName")
+            const userName = userNameLocalStorage == null || userNameLocalStorage == '' ? '十七' : userNameLocalStorage
 
-            const userName = user_name == null || user_name == '' ? globalConfig?.userName : user_name
             // ユーザーの発言を追加して表示
             const messageLog: Message[] = [
                 //...chatLog,

@@ -15,7 +15,12 @@ if (environment === "development") {
 
 export async function connect(): Promise<WebSocket> {
     const hostname = window.location.hostname;
-    const socket = new WebSocket(`ws://${hostname}:8081/${baseUrl}/ws/`);
+    var port = window.location.port;
+    if (!port) {
+        // 默认端口，HTTP是80，HTTPS是443
+        port = window.location.protocol === 'https:' ? '443' : '80';
+    }
+    const socket = new WebSocket(`ws://${hostname}:${port}/${baseUrl}/ws/`);
     socket.onopen = () => {
         console.log('WebSocket connection established.');
         socket.send('connection success');
