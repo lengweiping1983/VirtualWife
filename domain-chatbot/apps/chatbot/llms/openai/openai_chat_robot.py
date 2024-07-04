@@ -23,8 +23,8 @@ class OpenAIGeneration(BaseLlmModel):
     def __init__(self) -> None:
         from dotenv import load_dotenv
         load_dotenv()
-        self.openai_base_url = os.environ["OPENAI_BASE_URL"]
-        self.openai_api_key = os.environ["OPENAI_API_KEY"]
+        self.openai_base_url = os.environ.get("OPENAI_BASE_URL")
+        self.openai_api_key = os.environ.get("OPENAI_API_KEY")
 
     def chat(self,
              prompt: str,

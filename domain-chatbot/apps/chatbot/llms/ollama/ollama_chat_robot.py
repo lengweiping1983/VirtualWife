@@ -20,8 +20,8 @@ class OllamaGeneration(BaseLlmModel):
     def __init__(self) -> None:
         from dotenv import load_dotenv
         load_dotenv()
-        self.ollama_base_url = os.environ["OLLAMA_API_BASE"]
-        self.completion_model_name = "ollama/" + os.environ["OLLAMA_API_MODEL_NAME"]
+        self.ollama_base_url = os.environ.get("OLLAMA_API_BASE")
+        self.completion_model_name = "ollama/" + os.environ.get("OLLAMA_API_MODEL_NAME")
 
     def chat(self,
              prompt: str,
