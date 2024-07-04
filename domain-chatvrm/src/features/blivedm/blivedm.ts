@@ -15,7 +15,7 @@ if (environment === "development") {
 
 export async function connect(): Promise<WebSocket> {
     const hostname = window.location.hostname;
-    const socket = new WebSocket(`ws://${hostname}${baseUrl}/ws/`);
+    const socket = new WebSocket(`ws://${hostname}:8081/${baseUrl}/ws/`);
     socket.onopen = () => {
         console.log('WebSocket connection established.');
         socket.send('connection success');

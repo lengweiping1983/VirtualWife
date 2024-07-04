@@ -153,7 +153,6 @@ export default function Home() {
         setAssistantMessage(currentAssistantMessage);
         // handleSubtitle(aiText + " "); // 添加空格以区分不同的字幕
         // startTypewriterEffect(aiTextLog);
-        handleSubtitle(aiTextLog);
         // アシスタントの返答をログに追加
         const messageLogAssistant: Message[] = [
             ...allMessageLogAssistant,
