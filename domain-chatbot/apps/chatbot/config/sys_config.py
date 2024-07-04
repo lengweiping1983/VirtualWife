@@ -74,7 +74,9 @@ class SysConfig:
 
     def load(self):
         logger.debug("======================== Load SysConfig ========================")
-
+        from dotenv import load_dotenv
+        load_dotenv()
+        logger.info(f"OPENAI_API_KEY: {os.environ['OPENAI_API_KEY']}")
         sys_config_json = self.get()
 
         os.environ['TOKENIZERS_PARALLELISM'] = "false"
